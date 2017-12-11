@@ -1,0 +1,57 @@
+---
+title: "What to expect when Bitcoin Futures Start Trading Tonight: Cash and Carry Arbitrage"
+author: "Mindy Mallory"
+date: "December 10, 2017"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+
+options(WordPressLogin = c(user = 'password'),
+        WordPressURL = 'https://yoursite.wordpress.com/xmlrpc.php')
+```
+
+Bitcoin futures (XBT) start trading tonight at 5pm CST on the CBOE. CME Group will launch a bitcoin futures contract () [next week on December 18, 2017](http://www.cmegroup.com/media-room/press-releases/2017/12/01/cme_group_self-certifiesbitcoinfuturestolaunchdec18.html). 
+
+[![](images/2017-12-10-cboe.png)](http://cfe.cboe.com/cfe-products/xbt-cboe-bitcoin-futures)
+
+Source: [CBOE](http://cfe.cboe.com/cfe-products/xbt-cboe-bitcoin-future)
+
+The launch of futures contracts for bitcoin is highly anticipated since the cryptocurrency has gained over 1500% this year alone. Before the launch of futures contracts on familiar and regulated exchanges, getting institutional-scale money into this market has been difficult. 
+
+[![](images/2017-12-10-bitcoin-chart.png)](https://coinmarketcap.com/)
+Source: [coinmarketcap.com](https://coinmarketcap.com/)
+
+Some believe futures trading will pop the bitcoin bubble because now bears can short with leverage. Others believe this is the beginning of another price run upward. I happen to think that after an initial period of volatility related to uncertainty of the open, futures trading will bring stability to the price as bulls and bears can trade on equal footing in the futures markets. 
+
+This post isn't really an attempt to call the direction of the bitcoin price move post-futures, I want to discuss what we should see from the futures forward curve. 
+
+# Cash and Carry Arbitrage
+
+For a storable commodity, the futures forward curve provides incentives or disincentives to store the commodity based on the relative scarcity of the commodity in the market. When the commodity futures is in 'full carry' the price spread between the nearby futures and the first deferred futures fully compensates the holder of stocks for the cost of storage and interest costs of delaying the sale of their stocks in the spot market. For a commodity, the storage costs must pay for bins and trucks and all the actual expenses required to put the commodity into safe storage. 
+
+Bitcoin futures should trade more like stock index futures or gold index futures because there is no physical storage costs. The futures market must align the cost of financing the purchase of bitcoin in one of the spot markets and taking on a short position in the deferred futures contract. Expressing the financing cost in simple interest terms,  
+
+$$Bitcoin_{spot}(1+rt) = BitcoinFuture_{t}$$
+
+Or, the futures price expiring at $t$ future date (expressed as a fraction of a year), must be equal to the spot price of bitcoin times simple interest with an APR of $r*100$. As an example, suppose financing costs are 3% APR, the spot price of bitcoin is $15,500, and we consider the futures price of the March bitcoin contract (which expires in about 0.25 of a year). Then the bitcoin futures contract should be trading at: 
+
+$$15,500(1+0.03*0.25)= 15,616.25$$
+
+If not, there would be a cash and carry arbitrage opportunity. If the futures price is higher than $\$15,616,25$, you could take out a loan, buy bitcoin in the spot market and short the March futures contract. Whether the spot price of bitcoin rises to the March futures price or the March futures price falls to its 'fair value' you will have earned a risk-less profit. 
+
+# Basis Risk
+
+The cash-and-carry arbitrage example I showed above assumes that you have access to the spot market that the bitcoin futures contract settles to. The price of bitcoin can vary widely across different exchanges due to the lag in moving fiat money across exchanges (it takes about a day to get a wire transfer through), making it difficult to buy and sell across exchanges and force all the exchanges to one price. 
+
+[![](images/2017-12-10-basis.png)](https://coinmarketcap.com/currencies/bitcoin/#markets)
+Source: [coinmarketcap.com](https://coinmarketcap.com/currencies/bitcoin/#markets)
+
+The CBOE and CME have taking very different approaches to dealing with the basis risk that is inherent in this market. The CBOE contract will settle to the [Gemini Exchange's](https://gemini.com/) [daily auction price](https://gemini.com/auction-data/). The Gemini Exchange frequently is not even in the top ten with respect to 24-hour volume, but it is one of the more 'reputable' exchanges that is catering to institutions who are interested in cryptocurrency markets. 
+
+The CME Group's bitcoin futures contract will settle to the CME's proprietary [Bitcoin Reference Rate](http://www.cmegroup.com/trading/cf-bitcoin-reference-rate.html) which they have been calculating since November 14, 2016. It is based on the spot price at the Bitstamp, GDAX, itBit, and Kraken exchanges. The BRR follows trade volumes on these exchanges. That means someone wishing to implement a cash-and-carry arbitrage will have to hold their bitcoins at the BRR exchanges in the same proportions that CME is currently using for the BRR. This proportion presumably can change from day to day, making cash and carry arbitrage harder and costlier to implement.  
+
+
+
+
+
