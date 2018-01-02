@@ -1,9 +1,17 @@
 ---
 title: "In-Person Versus Online Commodity Price Analysis Class"
-output: html_document
+output:
+  html_document:
+    keep_md: true
 ---
 
-This semester in my Commodity Price Analysis class, I conducted an experiment. I delivered the class in person as I have done in the past, but I also provided all the content online through a web-based textbook, and youtube videos. The first day of class I invited students who prefered online classes to treat this class as an online class and to give me feedback about how the content compared to good and bad classes they have taken before. Students who like face-to-face classes could attend class as usual. 
+<meta property="og:title" content="In-Person Versus Online Commodity Price Analysis Class">
+<meta property="og:description" content="In my Commodity Price Analysis class, I delivered the class in person and online simultaneously. I surveyed students about their experiences and I reporting them here.">
+<meta property="og:image" content="http://blog.mindymallory.com/wp-content/uploads/2017/12/unnamed-chunk-9-1.png">
+<meta property="og:url" content="http://blog.mindymallory.com/2017/12/InPerson-versus-Online">
+
+
+This semester in my Commodity Price Analysis class, I conducted an experiment. I delivered the class in person as I have done in the past, but I also provided all the content online through a web-based textbook, and YouTube videos. The first day of class I invited students who preferred online classes to treat this class as an online class and to give me feedback about how the content compared to good and bad classes they have taken before. Students who like face-to-face classes could attend class as usual. 
 
 At the end of class I surveyed students about their experiences and I am reporting the results here. 
 
@@ -13,23 +21,30 @@ See [Background](#background) for more context about the class itself.
 
 After teaching Price Analysis for a couple of years I thought it might be worthwhile to offer a section of the class online in the fall and/or in the summer in addition to the face-to-face section I have been teaching. 
 
-I wanted the online content to give the students the 'feeling' of attending class, with the dynamic of class discussion preserved. My idea was for my TA (this year my TA was first-year Master student Felipe Avelies) to use my cell phone to record what I write on the board and show on the computer screen. My thought process was that cell phone video quality is pretty good these days, so we could just capture what is going on in class and that would be a good way to capture and digitize the content without a lot of extra time spent on my part. By recording the lectures the students would kind of get to know me, and they would have the feel of actually being there.
+I wanted the online content to give the students the 'feeling' of attending class, with the dynamic of class discussion preserved. My idea was for my TA (this year my TA was first-year Master student Felipe Avileis) to use my cell phone to record what I write on the board and show on the computer screen. My thought process was that cell phone video quality is pretty good these days, so we could just capture what is going on in class and that would be a good way to capture and digitize the content without a lot of extra time spent on my part. By recording the lectures the students would kind of get to know me, and they would have the feel of actually being there.
 
-This failed spectacularly and immediately. The first day my TA Felipe recorded the lecture; you couldn't hear the audio and you couldn't see what I wrote on the board or showed on the screen. I realized you would need at least two high quality video cameras, and good mikes to accomplish this format, far beyond my budget of $0. Since I had already promised students they could take the course online if they would like, I had to come up with a backup way to deliver the content online.
+This failed spectacularly and immediately. The first day Felipe recorded the lecture; you couldn't hear the audio and you couldn't see what I wrote on the board or showed on the screen. I realized you would need at least two high quality video cameras and mics to accomplish this format (one recording me, and one recording class questions and discussion), then someone to edit it all together. This would far exceed my budget of $0. Since I had already promised students they could take the course online if they would like, I had to come up with a backup way to deliver the content online.
 
 I ended up using [Screencast-o-matic](https://screencast-o-matic.com/) to record voice-overs of lectures and exercises. This took a lot more time than I originally planned for, but in the end I think I have a pretty decent set of digital content I can use to offer the course online if I need to. 
+
+Here is an example of a video for the lab exercise on soybean crushing margins:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/fvJypQVOILE" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+
+The rest of the videos are <a href="https://www.youtube.com/channel/UCNoSdaun0i8V1DChFUek95g/videos">here</a>.
 
 ### Class Logistics for Online and In-Person Versions of the Class
 
 |**Tuesdays**          |                     |
 |:---------------------|:--------------------|
 |*In-Person*             | *Online*              |
-|Students come to traditional in-class lecture on the text| Students watch a video with me discussing the text |
+|Students come to traditional in-class lecture based on the text| Students watch a video with me discussing the text |
 |**Thursdays** |               |
 | *In-Person*          | *Online*             |
 |Students bring their laptops to class and we do a lab exercise with some kind of commodity markets data in Excel | Students follow along as they watch a video of me walking through the same lab exercise with commodity markets data in Excel. They complete the assignment on their own time on their own computer | 
 
-Students did not have to commit to one format or the other, they could come to the in person class when they felt like it, or just do the requirements online when they felt like it. Everyone took the same in-person, paper-and-pencil exam, however. 
+Students did not have to commit to one format or the other, they could come to the in-person class when they felt like it, or just do the requirements online when they felt like it. Everyone took the same in-person, paper-and-pencil exam, however. 
+
 
 
 ```{r setup, include=FALSE}
@@ -58,15 +73,37 @@ response <- n/93*100
 
 ### Survey Details
 
-I gave this survey to my class for my own benefit, to get a feel for how the onine content worked out. Some things you should know:
+I gave this survey to my class for my own benefit, to get a feel for how the online content worked out. Some things you should know:
 
-+ Not Anonmous. I took the easy route and administered the survey via Compass (our 'learning managment system'), which means the students were logged in when they completed the survey. I gave 'opt out' as an option to every survey question, and I tried to assure them that their responses would not affect their grades. However, at the end of the day, I can't rule out that some students' rosey responses were influenced by the fact that I could figure out who they are. I probably could have gotten this on the official anonymous course evaluations for this class, but that would have required forethought - not my strong suit. 
++ Not Anonymous. I took the easy route and administered the survey via Compass (our 'learning management system'), which means the students were logged in when they completed the survey. I gave 'opt out' as an option to every survey question, and I tried to assure them that their responses would not affect their grades. However, at the end of the day, I can't rule out that some students' rosey responses were influenced by the fact that I could figure out who they are. I probably could have gotten this on the official anonymous course evaluations for this class, but that would have required forethought - not my strong suit. 
 
 + Selection. I did not randomly assign students into the online and in-person groups, so I will refrain from any kind of prognostication about the use of educational technology on learning outcomes.  
 
 + Response Rate. There were 93 students enrolled at the end of the class. The survey had a response rate of `r round(response)`%. This was influenced by the fact that I gave extra credit for completing the survey worth the equivalent of one half of one lab exercise. 
 
+### What I Learned from Offering Price Analysis In-person and Online Simultaneously
 
+**Takeaways Online Students**
+
++ I regret the content layout design I chose in Compass. This came up several times with the online students in question 12. Since this is the primary way they interacted with the course, I am not surprised. 
+
++ It seemed more difficult for these students to anticipate what would be on the exam. They were more likely to ask for study guide, or example questions for the test. 
+    + When I asked the students what they liked in an online course at the beginning of the year they said predictability is big. Since they are sitting alone with the course material, they appreciate clear expectations and anything that verifies to them they are on the right track. Looks like I could do a better job at this. 
+
+**Takeaways In-Person Students**
+
++ I was surprised how many in-person students said they really liked having the content online in addition to attending in person. Many said they really liked the videos for review. 
+    - It would be too costly to develop online content for a class that is only offered in-person, but if the class is offered online as well, there seems to be a lot of value to giving students access to the online content as well. 
+
+
+**Takeaways for Both**
+
++ We had an issue in that I developed the lab exercises on a Windows machine and many of the students had Apple labtops. The menus in Excel and just different enough on the two operating systems to cause problems. I haven't used an Apple since 1999, so I had no clue how to translate for them. A couple students mention this in their response to question 12.
+  ` + I'm not sure what to do about this. I guess over time I will learn the Apple Excel menus or learn resources to send them to. 
+    + One partial solution would be to cap the in-person section at a level where we could get into a computer lab (around 60 here at Illinois).
+
+
+## Survey Results
 
 ### Question 1: `r survey$Q1[1]`
 
@@ -85,7 +122,7 @@ ggplot(grades, aes(x=Answer1, y = n)) + geom_bar(stat= 'Identity', fill = 'blue'
 
 The students who chose to attend the class in-person were more likely to earn an A and students who chose to attend online were more likely to earn a B. 
 
-**Note: Either some students were thinking optimistically or the students who did poorest were the ones who did not complete the survey. I could be accused of being too soft-hearted to undergraduates, but not quite as much as these responses suggest!
+**Note: Either some students were thinking optimistically or the students who did poorest were the ones who did not complete the survey. I could be accused of being too softhearted to undergraduates, but not quite as much as these responses suggest!
 
 ```{r}
 grades <- survey %>% 
@@ -115,7 +152,7 @@ ggplot(grades, aes(x=Answer3, y = n)) + geom_bar(stat= 'Identity', fill = 'blue'
 
 ### Question 4:`r survey$Q4[1]`
 
-Seems like attending the class in-person is a natural substution for having to read the book. 
+Seems like attending the class in-person is a natural substitution for having to read the book. 
 
 ```{r}
 
@@ -130,7 +167,7 @@ ggplot(grades, aes(x=Answer4, y = n)) + geom_bar(stat= 'Identity', fill = 'blue'
 
 ### Question 5: `r survey$Q5[1]`
 
-Based on Youtube views, these have to be over-reported. Lab videos got way more views than the lecture videos. 
+Based on YouTube views, these have to be over-reported. Lab videos got way more views than the lecture videos. 
 
 ```{r}
 
@@ -242,7 +279,7 @@ ggplot(grades, aes(x=Answer10, y = n)) + geom_bar(stat= 'Identity', fill = 'blue
 
 ### Question 11: `r survey$Q11[1]`
 
-I was worried the videos would be percieved as cheap or poor quality. It doesn't seem to be the case. 
+I was worried the videos would be perceived as cheap or poor quality. It doesn't seem to be the case. 
 
 ```{r, fig.height= 7}
 library(forcats)
@@ -264,22 +301,6 @@ ggplot(grades, aes(x=Answer11, y = n)) + geom_bar(stat= 'Identity', fill = 'blue
 ### Question 12: `r survey$Q12[1]`
 
 I've included all the responses, positive and negative, here. To me, it is the most informative part. 
-
-**Takeaways Online Students**
-
-+ I regret the content layout design I chose in Compass. This came up several times with the online students. Since this is the primary way they interacted with the course, I am not surprised. 
-
-+ It seemed more difficult for these students to anticipate what would be on the exam. They were more likely to ask for study guide, or example questions for the test. 
-
-**Takeaways In-Person Students**
-
-+ I was surprised how many in-person students said they really liked having the content online in addition to attending in person. Many said they really liked the videos for review. It would be too costly to develop online content for a class that is only offered in-person, but if the class is offered online as well, there seems to be a lot of value to giving students access to the online content as well. 
-
-
-**Takeaways for Both**
-
-+ We had an issue in that I developed the lab exercises on a Windows machine and many of the students had Macs. The menus in Excel and just different enough on the two operating systems to cause problems. A couple studnets mention this in their response. 
-
 
 
 ```{r}
@@ -309,11 +330,11 @@ Ans12 %>% kable("html") %>% kable_styling(bootstrap_options = c("striped", "hove
 
 The class, "Commodity Price Analysis," is a class that is taught in one form or another at most Ag Econ departments in the U.S. The class studies how agricultural commodity prices are formed. Scott Irwin has taught the class once per year at the University of Illinois for a long time, but demand for the class grew to the point where we needed to offer it once per semester, so I began teaching it each every fall starting in 2015.
 
-Scott tells people that he structured the course to be an overview of how [Darrel Good](http://farmdoc.illinois.edu/good/) went about putting together [weekly Outlook articles](http://farmdocdaily.illinois.edu/authors/darrel_good/) for FarmDoc Daily and other U of I extension publications and talks. Roughly speaking, this approach teaches how to understand, follow, and predict balance sheets like reported in the [USDA's WASDE report](https://www.usda.gov/oce/commodity/wasde/), and their impact on prices. I liked this approach, especially since it basically matches what I hear most every expert analyst (academic and industry alike) talking about with regards to grain markets. So, I decided to adopt this format too and Scott was kind enough to give me his powerpoint lectures as an outline to get me started. 
+Scott tells people that he structured the course to be an overview of how [Darrel Good](http://farmdoc.illinois.edu/good/) went about putting together [weekly Outlook articles](http://farmdocdaily.illinois.edu/authors/darrel_good/) for FarmDoc Daily and other U of I extension publications and talks. Roughly speaking, this approach teaches how to understand, follow, and predict balance sheets like reported in the [USDA's WASDE report](https://www.usda.gov/oce/commodity/wasde/), and their impact on prices. I liked this approach, especially since it basically matches what I hear most every expert analyst (academic and industry alike) talking about with regards to grain markets. So, I decided to adopt this format too and Scott was kind enough to give me his PowerPoint lectures as an outline to get me started. 
 
 While I liked this approach, there is not really a textbook out there that I could follow. I figured that it would take about the same amount of time to write lecture slides and think about what to say in class as it would to just write it down in a 'book', so I started drafting, [Price Analysis: A Fundamental Approach to the Study of Commodity Prices](http://mindymallory.com/PriceAnalysis/), writing a chapter just in time to teach it in class. 
 
-The second year I wrote exercises for each chapter that teaches students how to go and find relevent data from vendors and the USDA and how to do some kind of analysis with it. In tandem with this, we end up learning a fair bit of advanced Excel skills, which I feel is worthwhile to them no matter what they are destined for. 
+The second year I wrote exercises for each chapter that teaches students how to go and find relevant data from vendors and the USDA and how to do some kind of analysis with it. In tandem with this, we end up learning a fair bit of advanced Excel skills, which I feel is worthwhile to them no matter what they are destined for. 
 
 
 
