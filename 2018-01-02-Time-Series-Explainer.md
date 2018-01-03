@@ -14,7 +14,7 @@ Nearly all of my research can be described as applied time-series econometrics. 
 
 For the graduate student aspiring to do a (Ph.D.) dissertation or (M.S.) thesis in price analysis this is a real bummer because it often will be 6 to 18 months before they can work a formal time series econometrics course into their schedule, severely delaying their research unless they can learn a lot on their own. 
 
-This post is for my current and future new-ish graduate students who will soon start a research program in applied price analysis or finance, but feel overwhelmed and under-prepared in the way of time-series econometrics. I'm not going to cover the actual statistics, I link to resources for how you can start to learn more on your own at the bottom, but in this post I will give a 30,000 ft view of 'The Game' that is going on in applied time-series analysis. It follows a fairly standard template. 
+This post is for my current and future new-ish graduate students who will soon start a research program in applied price analysis or finance, but feel overwhelmed and under-prepared in the way of time-series econometrics. It is also accessible to anyone who has had a basic class in statistics. I'm not going to cover how to use the actual statistics, I link to resources for how you can start to learn more on your own at the bottom, but in this post I will give a 30,000 ft view of 'The Game' that is going on in applied time-series analysis. It follows a fairly standard template. 
 
 # The Game
 
@@ -32,39 +32,29 @@ Most introductory time-series econometric statistics and models are utilized tow
 
 Each of these can be thought of as a model selection exercise, helping you to pick witch statistical model is the right choice for your research question. After a while you will have an intuition about which model to use on which kind of data; even then you have to go through this process in every research project to convince your reader that you did, in fact, choose a suitible model for the question at hand. 
 
-If you are new to this you don't have any intuition about what the right model is for your question, but going through these three issues will lead you there anyway. 
+If you are new to this you probably don't have any intuition about what the right model is for your question, but going through these three issues will lead you there anyway. 
 
 ### Stationarity Testing
 
-The first thing you have to establish in any time-series analysis is whether your data are stationary or not because it essentially determines whether you should try to model levels of the data or first differences of the data. Let me explain more. 
+The first thing you have to establish in any time-series analysis is whether your data are stationary or not because it essentially determines whether you should try to model levels of the data or first differences of the data. 
 
-In the figure below I simulate and plot a stationary series. Notice that it is basically flat, with random ups and downs. 
+If you want to see the R code that generates any of the following stuff, visit [my Github repostory](https://github.com/mindymallory/BlogPosts/blob/master/2018-01-02-Time-Series-Explainer.Rmd) that has the source code for this blog post.  
 
+**Stationary Data**
 
-```r
-library(ggplot2)
-library(xts)
+In the figure below I simulate and plot a stationary series. The series comes from 500 draws of a normal distribution with mean = 300 and standard deviation = 0.25. Notice that it is basically flat, with random ups and downs. 
 
-# Making the fake price series
-## Dates
-end     <- Sys.Date()
-start   <- end - 499 
-t       <- as.Date(start:end)
-
-## 500 fake prices from a normal distribution
-x       <- rnorm(n = 500, mean = 300, sd = .25)
-
-## Put dates and prices together in a time-series object
-p       <- as.xts(x, order.by = t)
-
-# Plot It
-autoplot(p, geom = 'line') + 
-  labs(title = "Fake Stationary Price Series Centered around P = $300", x = "", y = "Price") + 
-  theme_bw() + 
-  scale_x_date(date_labels = "%m-%d-%Y", date_breaks = "3 month")
-```
+That is basically what stationarity means, all the data come from a single probability distribution. 
 
 ![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+When you look at this plot it is not hard to imagine that it came from draws from a single probability distribution, namely:
+
+$$p_t \sim N(\mu = 300, \sigma = .25)$$
+
+We need our data to be stationary in order to be able to do statistical tests and modelling on it. So if the data is not stationary, we have to transform it so it is and do our analysis on the transformed variable. The next sub-section should explain why. 
+
+**Non-Stationary or Unit Root Data**
 
 In the plot below I plot the S&P 500 Index from 1990 to 2017. By visual inspection you should have a sense that this series is 
 
