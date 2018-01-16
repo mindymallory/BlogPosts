@@ -14,7 +14,7 @@ Nearly all of my research can be described as applied time-series econometrics. 
 
 For the graduate student aspiring to do a (Ph.D.) dissertation or (M.S.) thesis in price analysis this is a real bummer because it often will be 6 to 18 months before they can work a formal time series econometrics course into their schedule, severely delaying their research unless they can learn a lot on their own. 
 
-This post is for my current and future new-ish graduate students who will soon start a research program in applied price analysis or finance, but feel overwhelmed and under-prepared in the way of time-series econometrics. It is also accessible to anyone who has had a basic class in statistics. I'm not going to cover how to use the actual statistics, I link to resources for how you can start to learn more on your own at the bottom, but in this post I will give a 30,000 ft view of 'The Game' that is going on in applied time-series analysis. It follows a fairly standard template. 
+This post is for my current and future new-ish graduate students who will soon start a research program in applied price analysis or finance, but feel overwhelmed and under-prepared in the way of time-series econometrics. It is also accessible to anyone who has had a basic class in statistics, and an interest in price analysis or forecasting. I'm not going to cover how to use the actual statistics, I link to resources for how you can start to learn more on your own at the bottom, but in this post I will give a 30,000 ft view of 'The Game' that is going on in applied time-series analysis. It follows a fairly standard template. 
 
 # The Game
 
@@ -56,8 +56,31 @@ We need our data to be stationary in order to be able to do statistical tests an
 
 **Non-Stationary or Unit Root Data**
 
-In the plot below I plot the S&P 500 Index from 1990 to 2017. By visual inspection you should have a sense that this series is 
+In the plot below I plot the S&P 500 Index from 1990 to 2017. By visual inspection you should have a sense that this series is non-stationary in that the prices appear to be trending. 
 
+
+
+![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+
+So for example, if you wanted to write down the probability distribution that generate the prices, you would have to know where you are in time. Since the probability distribution that generated the prices keeps changing over time, the distribution is not stationary. This fact will mess up our statistical analysis. 
+
+$$p_t \sim N(\mu_t, \sigma_t)$$
+
+*Spurious Regression*
+
+One of the worst things non-stationary data does is set you up to believe that you have found a really strong relationship between two variables, when you really have just found a 'spurious relationship'. 
+
+<!-- ```{r} -->
+<!-- #Not sure why this chunk can run in console, but won't knit. Oh well, saved to .png and embedded that way. -->
+<!-- data <- cbind(SPY$SPY.Adjusted, GS$GS.Adjusted) -->
+<!-- q <- autoplot(data, facets = FALSE) + -->
+<!--   theme_bw() + -->
+<!--   labs(title = "SPY and GS Prices from 2007 to 2017", x = "") -->
+<!-- ggsave('images/nonstationary.png', width = 6, height = 4) -->
+<!-- ``` -->
+
+![](images/nonstationary.png)
 
 # Books to Get You Started
 
