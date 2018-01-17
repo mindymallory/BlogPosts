@@ -18,19 +18,21 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 <meta property="og:url" content="">
 -->
 
-Nearly all of my research can be described as applied time-series econometrics. When graduate students approach me hoping to start research in this area, they usually have to start from ground zero in terms of their time-series statistical training. Even incoming graduate students well trained in econometrics often have seen little, if any, treatment of time-series techniques because first and even second econometrics courses focus most of their time on cross-sectional and panel techniques.
+When graduate students approach me hoping to start research in price analysis, they usually have to start from ground zero in terms of their time-series statistical training. Even incoming graduate students well trained in econometrics often have seen little, if any, treatment of time-series techniques because first and even second econometrics courses focus most of their time on cross-sectional and panel techniques.
 
-For the graduate student aspiring to do a (Ph.D.) dissertation or (M.S.) thesis in price analysis this is a real bummer because it often will be 6 to 18 months before they can work a formal time series econometrics course into their schedule, severely delaying their research unless they can learn a lot on their own. 
+For the graduate student aspiring to do a (Ph.D.) dissertation or (M.S.) thesis in price analysis this is a real bummer because it often will be 6 to 18 months before they can work a formal time-series course into their schedule, severely delaying their research unless they can learn a lot on their own. 
 
-This post is for my current and future new-ish graduate students who will soon start a research program in applied price analysis or finance, but feel overwhelmed and under-prepared in the way of time-series econometrics. It is also accessible to anyone who has had a basic class in statistics, and an interest in price analysis or forecasting. I'm not going to cover how to use the actual statistics, I link to resources for how you can start to learn more on your own at the bottom, but in this post I will give a 30,000 ft view of 'The Game' that is going on in applied time-series analysis. It follows a fairly standard template. 
+This series of posts is for my current and future new-ish graduate students who will soon start research in applied price analysis or finance, but feel overwhelmed and under-prepared in the way of time-series econometrics. It is also accessible to anyone who has had a basic class in statistics (through linear regression), and an interest in price analysis or forecasting. 
 
-# The Game
-
-When you start a time-series class or read a paper using time-series analyisis for the first time you are greeted by a barage of new statistical tests and terms like, "Augmented Dickey-Fuller Test", "Johansen's Cointegration Test", "AR(p)", "GARCH(p,q)", "Vector Autoregression (VAR)" and "Vector Error Correction Model (VECM)" to name a few. 
+When you start a time-series class or read a paper that uses time-series analyisis for the first time you are greeted by a barage of new statistical tests and terms like, "Augmented Dickey-Fuller (ADF) Test", "Johansen's Cointegration Test", "AR(p)", "GARCH(p,q)", "Vector Autoregression (VAR)" and "Vector Error Correction Model (VECM)" to name a few. 
 
 Since a statistics or econometrics class has to cover so much... well, statistics, sometimes the forest can be lost for the trees in how all these tests and models can help one build a case around the research question they care about. 
 
-Most introductory time-series econometric statistics and models are utilized toward one of the following three goals: 
+I'm not going to cover how to use the actual statistics at all in this series; for that I link to resources for how you can start to learn more on your own at the bottom. Rather, in this series I give a 30,000 ft view of 'The Game' that is going on in applied time-series analysis. It follows a fairly standard template. 
+
+# The Game
+
+Most introductory time-series efforts are utilized toward one of the following three goals: 
 
 + Stationarity Testing
 
@@ -38,11 +40,13 @@ Most introductory time-series econometric statistics and models are utilized tow
 
 + Adjusting for Residuals that may not be Perfect "White Noise"
 
-Each of these can be thought of as a model selection exercise, helping you to pick witch statistical model is the right choice for your research question. After a while you will have an intuition about which model to use on which kind of data; even then you have to go through this process in every research project to convince your reader that you did, in fact, choose a suitible model for the question at hand. 
+Each of these can be thought of as a model selection exercise, helping you to pick which statistical model is the right choice for your research question. After a while you will have an intuition about which model to use on which kind of data; even then you have to go through this process in every research project to convince your reader that you did, in fact, choose a suitible model for the question at hand. 
 
 If you are new to this you probably don't have any intuition about what the right model is for your question, but going through these three issues will lead you there anyway. 
 
-### Stationarity Testing
+In the rest of this post we will cover what is accomplished by doing 'Stationarity Testing'. Later posts will cover the second and third bullets. 
+
+## Stationarity Testing
 
 The first thing you have to establish in any time-series analysis is whether your data are stationary or not because it essentially determines whether you should try to model levels of the data or first differences of the data. 
 
@@ -56,9 +60,11 @@ That is basically what stationarity means, all the data come from a single proba
 
 ```{r}
 
-# If you are following along, uncomment the next two lines and run once to install the required packages 
+# If you are following along, uncomment the next lines and run once to install the required packages 
 # install.packages('ggplot2')
 # install.packages('xts')
+# install.packages("stargazer")
+# install.packages('quantmod')
 
 # These lines 'load' the required packages, something you have to do every time you start an R session, even if the package is installed on your machine.  
 library(ggplot2)
@@ -92,7 +98,7 @@ We need our data to be stationary in order to be able to do statistical tests an
 
 **Non-Stationary or Unit Root Data**
 
-In the plot below I plot the S&P 500 Index from 1990 to 2017. By visual inspection you should have a sense that this series is non-stationary in that the prices appear to be trending. 
+In the plot below I plot SPY the exchange traded fund that tracks the S&P 500 Index from 1990 to 2017. By visual inspection you should have a sense that this series is non-stationary in that the prices appear to be trending. 
 
 ```{r, include = FALSE}
 # install.packages('quantmod')
@@ -114,7 +120,7 @@ $$p_t \sim N(\mu_t, \sigma_t)$$
 
 *Spurious Regression*
 
-One of the worst things non-stationary data does is set you up to believe that you have found a really strong relationship between two variables, when you really have just found a 'spurious relationship'. 
+One of the worst things non-stationary data does is set you up to believe that you have found a really strong relationship between two variables, when you really have just found a 'spurious relationship'. In the figure below I plot SPY and Goldman Sachs (GS) prices from 2007 to 2017.  
 
 <!-- ```{r} -->
 <!-- #Not sure why this chunk can run in console, but won't knit. Oh well, saved to .png and embedded that way. -->
@@ -126,6 +132,22 @@ One of the worst things non-stationary data does is set you up to believe that y
 <!-- ``` -->
 
 ![](images/nonstationary.png)
+
+To illustrate a 'spurious regression' let's regress lagged GS prices on SPY prices. That means we are going to try to use yesterdays prices of GS and SPY to try to predict todays GS prices.
+
+$$GS_t = \beta_0 + \beta_1GS_{t-1} + \beta_1SPY_{t-1} + \epsilon_t$$
+The results of the regression are printed below. We find that lagged SPY prices are highly statistically significant predictors of GS prices. If you take these results and think you can predict GS prices you will probably be very poor very soon. 
+
+The problem is that the 'statistical significance' comes from the fact that we just ran a superconsistent regression. That basically means, since the varaibles we used in the regression are (probably, we didn't prove it here) non-stationary pretty much any regression we run will conclude statistical significance in a typical t-test. In other words, the regression results below aren't valid because the statistic doesn't follow the t distribution in the first place. 
+```{r, results = "asis"}
+library(stargazer)
+GS <- GS$GS.Adjusted
+SPY <- SPY$SPY.Adjusted
+linMod <- lm(GS ~  lag(GS) + lag(SPY))
+stargazer(linMod, type  = "html")
+```
+
+You may be skeptical at this point. I mean, after all, it isn't that crazy to think that todays GS prices would be related to yesterday's GS and SPY prices. In fact, it smacks of a very famous model in finance - the CAPM (we'll return to this briefly in a bit). So to illustrate, now we'll simulate two series so we are sure they are not related. Then we will regress one on the lag of the other and show statistical significance. 
 
 # Books to Get You Started
 
