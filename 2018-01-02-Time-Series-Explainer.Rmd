@@ -208,7 +208,7 @@ ggplot(data, aes(x = index, y = value, color = series)) +
 
 ```
 
-Clearly, this is not exaclty white noise. We have clear periods of heightened volatility (we'll cover what to do about that in another post). But, at least the series is not trending up or down. We have solved the problem of non-stationarity by using returns instead of levels. Just to drive this point home, let's regress GS returns on lagged SPY returns and show the are no longer significant. 
+Clearly, this is not exaclty white noise. We have clear periods of heightened volatility (we'll cover what to do about that in another post). But, at least the series is not trending up or down. We have solved the problem of non-stationarity by using returns instead of levels. Just to drive this point home, let's regress GS returns on lagged SPY returns and show they are no longer significant. 
 
 ```{r, results = "asis"}
 linMod <- lm(GSRet ~  lag(SPYRet) )
