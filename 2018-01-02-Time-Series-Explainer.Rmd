@@ -46,7 +46,7 @@ If you are new to this you probably don't have any intuition about what the righ
 
 In the rest of this post we will cover what is accomplished by doing 'Stationarity Testing'. Later posts will cover the second and third bullets. 
 
-## Stationarity Testing
+## Stationary and Non-Stationarity Data and Issues
 
 The first thing you have to establish in any time-series analysis is whether your data are stationary or not because it essentially determines whether you should try to model levels of the data or first differences of the data. 
 
@@ -65,6 +65,9 @@ That is basically what stationarity means, all the data come from a single proba
 # install.packages('xts')
 # install.packages("stargazer")
 # install.packages('quantmod')
+# install.packages('sde')
+# install.packages('broom')
+
 
 # These lines 'load' the required packages, something you have to do every time you start an R session, even if the package is installed on your machine.  
 library(ggplot2)
@@ -133,21 +136,94 @@ One of the worst things non-stationary data does is set you up to believe that y
 
 ![](images/nonstationary.png)
 
-To illustrate a 'spurious regression' let's regress lagged GS prices on SPY prices. That means we are going to try to use yesterdays prices of GS and SPY to try to predict todays GS prices.
+To illustrate a 'spurious regression' let's regress lagged GS prices on SPY prices. That means we are going to try to use yesterdays prices of SPY to try to predict todays GS prices.
 
-$$GS_t = \beta_0 + \beta_1GS_{t-1} + \beta_1SPY_{t-1} + \epsilon_t$$
+$$GS_t = \beta_0 + \beta_1SPY_{t-1}  + \epsilon_t$$
 The results of the regression are printed below. We find that lagged SPY prices are highly statistically significant predictors of GS prices. If you take these results and think you can predict GS prices you will probably be very poor very soon. 
 
-The problem is that the 'statistical significance' comes from the fact that we just ran a superconsistent regression. That basically means, since the varaibles we used in the regression are (probably, we didn't prove it here) non-stationary pretty much any regression we run will conclude statistical significance in a typical t-test. In other words, the regression results below aren't valid because the statistic doesn't follow the t distribution in the first place. 
+The problem is that the 'statistical significance' comes from the fact that we just ran a superconsistent regression. That basically means that since the varaibles we used in the regression are (probably, we didn't prove it here) non-stationary pretty much any regression we run will conclude statistical significance in a typical t-test. In other words, the regression results below aren't valid because the statistic doesn't follow the t distribution in the first place, but when you go along as it it does follow the t distribution, you will get 'significant' results almost every time. 
 ```{r, results = "asis"}
 library(stargazer)
 GS <- GS$GS.Adjusted
 SPY <- SPY$SPY.Adjusted
-linMod <- lm(GS ~  lag(GS) + lag(SPY))
-stargazer(linMod, type  = "html")
+linMod <- lm(GS ~  lag(SPY))
+stargazer(linMod, type  = "html", title = "GS Prices Regressed on Lagged GS and Lagged SPY Prices", align = TRUE)
 ```
 
-You may be skeptical at this point. I mean, after all, it isn't that crazy to think that todays GS prices would be related to yesterday's GS and SPY prices. In fact, it smacks of a very famous model in finance - the CAPM (we'll return to this briefly in a bit). So to illustrate, now we'll simulate two series so we are sure they are not related. Then we will regress one on the lag of the other and show statistical significance. 
+You may be skeptical at this point. I mean, after all, it isn't that crazy to think that todays GS prices would be related to yesterday's SPY prices. In fact, it smacks of a very famous model in finance - the CAPM (we'll return to this briefly in a bit). So to illustrate, now we'll simulate two series so we are sure they are not related. Then we will regress one on the lag of the other and show statistical significance. 
+
+For this example, I will print the code that generates the simulated prices, so you can be sure I created them independently. The simulated prices are plotted below.
+
+```{r, echo = TRUE}
+library(sde)
+fakeSPY   <- GBM(x = 275, r = 0.15, sigma = .2, T = 1, N=650)
+fakeGS    <- GBM(x = 243, r = 0.10, sigma = .3, T = 1, N=650)
+
+```
+
+```{r}
+library(broom)
+dates     <- seq(as.Date("2018-01-01"), length = 651, by = "days")
+fakeSPY   <- xts(x=fakeSPY, order.by = dates)
+fakeGS    <- xts(x=fakeGS, order.by = dates)
+
+data      <- cbind(fakeSPY, fakeGS)
+colnames(data) <- c('fakeSPY', 'fakeGS')
+data      <- tidy(data)
+
+ggplot(data, aes(x = index, y = value, color = series)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(title = "Simulated SPY and Simulated GS Prices from 2007 to 2017", x = "")
+
+```
+
+Now lets run the same regression as we did with the real prices. The regression results are shown in the table. 
+
+$$fakeGS_t = \beta_0 + \beta_1fakeSPY_{t-1}  + \epsilon_t$$
+
+```{r, results = "asis"}
+linMod <- lm(fakeGS ~  lag(fakeSPY) )
+stargazer(linMod, type  = "html", title = "Simulated GS Prices Regressed on Lagged Simulated SPY Prices")
+```
+
+Now we know the regression is meaningless because we simulated these prices ourselves. So that is the problem with non-stationary data in a nutshell, if you regress non-stationary variables on one another, you will always get spurious 'significant' results. 
+
+So what to do? The answer is almost always this: if your data are non-stationary, convert the series into percentage changes by creating variables of logged price differences. In the context of the examples we have been using, that would be
+
+$$SPYReturn_t = log(SPY_t) - log(SPY_{t-1}).  $$
+Plotted, the price returns look like the following. 
+```{r}
+SPYRet    <- log(SPY) - log(lag(SPY))
+GSRet     <- log(GS) - log(lag(GS))
+data      <- cbind(SPYRet, GSRet)
+
+colnames(data) <- c('SPY', 'GS')
+data      <- tidy(data)
+
+ggplot(data, aes(x = index, y = value, color = series)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(title = "SPY Returns and GS Returns from 2007 to 2017", x = "")
+
+```
+
+Clearly, this is not exaclty white noise. We have clear periods of heightened volatility (we'll cover what to do about that in another post). But, at least the series is not trending up or down. We have solved the problem of non-stationarity by using returns instead of levels. Just to drive this point home, let's regress GS returns on lagged SPY returns and show the are no longer significant. 
+
+```{r, results = "asis"}
+linMod <- lm(GSRet ~  lag(SPYRet) )
+stargazer(linMod, type  = "html", title = "GS Returns Regressed on Lagged SPY Returns")
+```
+
+The statistical significance is gone! Bummer! But really this is good. It is a sign that the returns we generated are in fact stationary. 
+
+# Stationarity Testing
+
+We went through all the discussion above basically assuming that we knew whether or not the data were stationary or not. In real applied research, you always have to make a case whether or not the data are stationary to support your choice to use levels of returns in your analysis. 
+
+There are several stationarity tests, also often called Unit Root tests. I'll list the main ones most often seen in the literature here. 
+
+
 
 # Books to Get You Started
 
