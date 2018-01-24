@@ -1,40 +1,41 @@
-# Basic Time-Series Analysis, Explained
+# Basic Time-Series Analysis, the Game
 
 
 
-<meta property="og:title" content="Basic Time-Series Analysis, Explained">
-<meta property="og:description" content="Even for students who are well trained in econometrics/statistics, getting started with time-series analysis can be mystifying.">
+<meta property="og:title" content="Basic Time-Series Analysis, the Game">
+<meta property="og:description" content="Even for students who are well trained in econometrics-statistics, getting started with time-series analysis can be mystifying.">
+<meta property=”og:type” content=”article”>
 
-<!-- 
-<meta property="og:image" content="">
-<meta property="og:url" content="">
--->
 
-Nearly all of my research can be described as applied time-series econometrics. When graduate students approach me hoping to start research in this area, they usually have to start from ground zero in terms of their time-series statistical training. Even incoming graduate students well trained in econometrics often have seen little, if any, treatment of time-series techniques because first and even second econometrics courses focus most of their time on cross-sectional and panel techniques.
+When graduate students approach me hoping to start research in price analysis, they usually have to start from ground zero in terms of their time-series statistical training. Even incoming graduate students well trained in econometrics often have seen little, if any, treatment of time-series techniques because first and even second econometrics courses focus most of their time on cross-sectional and panel techniques.
 
-For the graduate student aspiring to do a (Ph.D.) dissertation or (M.S.) thesis in price analysis this is a real bummer because it often will be 6 to 18 months before they can work a formal time series econometrics course into their schedule, severely delaying their research unless they can learn a lot on their own. 
+For the graduate student aspiring to do a (Ph.D.) dissertation or (M.S.) thesis in price analysis this is a real bummer because it often will be 6 to 18 months before they can work a formal time-series course into their schedule, severely delaying their research unless they can learn a lot on their own. 
 
-This post is for my current and future new-ish graduate students who will soon start a research program in applied price analysis or finance, but feel overwhelmed and under-prepared in the way of time-series econometrics. It is also accessible to anyone who has had a basic class in statistics, and an interest in price analysis or forecasting. I'm not going to cover how to use the actual statistics, I link to resources for how you can start to learn more on your own at the bottom, but in this post I will give a 30,000 ft view of 'The Game' that is going on in applied time-series analysis. It follows a fairly standard template. 
+This series of posts is for my current and future new-ish graduate students who will soon start research in applied price analysis or finance, but feel overwhelmed and under-prepared in the ways of time-series econometrics (this is totally normal, by the way). I hope it will also be accessible to anyone who has had a basic class in statistics (through linear regression), and an interest in price analysis or forecasting. 
 
-# The Game
-
-When you start a time-series class or read a paper using time-series analyisis for the first time you are greeted by a barage of new statistical tests and terms like, "Augmented Dickey-Fuller Test", "Johansen's Cointegration Test", "AR(p)", "GARCH(p,q)", "Vector Autoregression (VAR)" and "Vector Error Correction Model (VECM)" to name a few. 
+When you start a time-series class or read a paper that uses time-series analysis for the first time you are greeted by a barrage of new statistical tests and terms like, "Augmented Dickey-Fuller (ADF) Test", "Johansen's Cointegration Test", "AR(p)", "GARCH(p,q)", "Vector Autoregression (VAR)" and "Vector Error Correction Model (VECM)" to name a few. 
 
 Since a statistics or econometrics class has to cover so much... well, statistics, sometimes the forest can be lost for the trees in how all these tests and models can help one build a case around the research question they care about. 
 
-Most introductory time-series econometric statistics and models are utilized toward one of the following three goals: 
+I'm not going to get too deep into the details of these issues; for that I link to resources for how you can start to learn more on your own at the bottom. Rather, in this series I give a 30,000 ft view of 'The Game' that is going on in applied time-series analysis. It follows a fairly standard template. 
 
-+ Stationarity Testing
+# The Game
 
-+ Determining if Variables "Move Together" or are otherwise correlated
+Most introductory time-series efforts are utilized toward one of the following three goals: 
+
++ Stationary and Non-Stationary Data and Issues
+
++ Determining if Variables "Move Together" or are Otherwise Correlated
 
 + Adjusting for Residuals that may not be Perfect "White Noise"
 
-Each of these can be thought of as a model selection exercise, helping you to pick witch statistical model is the right choice for your research question. After a while you will have an intuition about which model to use on which kind of data; even then you have to go through this process in every research project to convince your reader that you did, in fact, choose a suitible model for the question at hand. 
+Each of these can be thought of as a model selection exercise, helping you to pick which statistical model is the right choice for your research question. After a while you will have an intuition about which model to use on which kind of data; even then you have to go through this process in every research project to convince your reader that you did, in fact, choose a suitable model for the question at hand. 
 
 If you are new to this you probably don't have any intuition about what the right model is for your question, but going through these three issues will lead you there anyway. 
 
-### Stationarity Testing
+In the rest of this post we will cover 'Stationary and Non-Stationary Data and Issues'. Later posts will cover the second and third bullets. 
+
+## Stationary and Non-Stationary Data and Issues
 
 The first thing you have to establish in any time-series analysis is whether your data are stationary or not because it essentially determines whether you should try to model levels of the data or first differences of the data. 
 
@@ -46,6 +47,43 @@ In the figure below I simulate and plot a stationary series. The series comes fr
 
 That is basically what stationarity means, all the data come from a single probability distribution. 
 
+
+```r
+# If you are following along, uncomment the next lines and run once to install the required packages 
+# install.packages('ggplot2')
+# install.packages('xts')
+# install.packages("stargazer")
+# install.packages('quantmod')
+# install.packages('sde')
+# install.packages('broom')
+# install.packages('tseries')
+# install.packages("kableExtra")
+# install.packages("knitr")
+
+
+# These lines 'load' the required packages, something you have to do every time you start an R session, even if the package is installed on your machine.  
+library(ggplot2)
+library(xts)
+
+# Making the fake price series
+## Dates
+end     <- Sys.Date()
+start   <- end - 499 
+t       <- as.Date(start:end)
+
+## 500 fake prices from a normal distribution
+x       <- rnorm(n = 500, mean = 300, sd = .25)
+
+## Put dates and prices together in a time-series object
+p       <- as.xts(x, order.by = t)
+
+# Plot It
+autoplot(p, ts.colour = "dark blue") + 
+  labs(title = "Fake Stationary Price Series Centered around P = $300", x = "", y = "Price") + 
+  theme_bw() + 
+  scale_x_date(date_labels = "%m-%d-%Y", date_breaks = "3 month")
+```
+
 ![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 When you look at this plot it is not hard to imagine that it came from draws from a single probability distribution, namely:
@@ -56,9 +94,26 @@ We need our data to be stationary in order to be able to do statistical tests an
 
 **Non-Stationary or Unit Root Data**
 
-In the plot below I plot the S&P 500 Index from 1990 to 2017. By visual inspection you should have a sense that this series is non-stationary in that the prices appear to be trending. 
+Below I plot SPY, the exchange traded fund that tracks the S&P 500 Index, from 1990 to 2017. By visual inspection you should have a sense that this series is non-stationary in that the prices appear to be trending. 
 
 
+```r
+library(quantmod)
+getSymbols(c('SPY', 'GS'))
+```
+
+```
+## [1] "SPY" "GS"
+```
+
+
+```r
+# In Yahoo Finance data, the Adjusted column accounts for any stock splits that may have taken place.
+autoplot(SPY$SPY.Adjusted) + 
+  theme_bw() + 
+  geom_line(color = "dark blue") + 
+  labs(title = "SPY Prices from 2007 to 2017", x = "")
+```
 
 ![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
@@ -69,7 +124,7 @@ $$p_t \sim N(\mu_t, \sigma_t)$$
 
 *Spurious Regression*
 
-One of the worst things non-stationary data does is set you up to believe that you have found a really strong relationship between two variables, when you really have just found a 'spurious relationship'. 
+One of the worst things non-stationary data does is set you up to believe that you have found a really strong relationship between two variables, when you really have just found a 'spurious relationship'. In the figure below I plot SPY and Goldman Sachs (GS) prices from 2007 to 2017.  
 
 <!-- ```{r} -->
 <!-- #Not sure why this chunk can run in console, but won't knit. Oh well, saved to .png and embedded that way. -->
@@ -81,6 +136,272 @@ One of the worst things non-stationary data does is set you up to believe that y
 <!-- ``` -->
 
 ![](images/nonstationary.png)
+
+To illustrate a 'spurious regression' let's regress GS prices on lagged SPY prices. That means we are going to try to use yesterday's prices of SPY to try to predict today's GS prices.
+
+$$GS_t = \beta_0 + \beta_1SPY_{t-1}  + \epsilon_t$$
+The results of the regression are printed below. We find that lagged SPY prices are highly statistically significant predictors of GS prices. If you take these results to the stock market and think you can predict GS prices you will probably be very poor very soon. 
+
+The problem is that the 'statistical significance' comes from the fact that we just ran a super-consistent regression. That basically means that since the variables we used in the regression are (probably, we didn't prove it here) non-stationary pretty much any regression we run will conclude statistical significance in a typical t-test. In other words, the regression results below aren't valid because the statistic doesn't follow the t distribution in the first place, but when you go along as it it does follow the t distribution, you will get 'significant' results almost every time. 
+
+```r
+library(stargazer)
+GS <- GS$GS.Adjusted
+SPY <- SPY$SPY.Adjusted
+linMod <- lm(GS ~  lag(SPY))
+stargazer(linMod, type  = "html", title = "GS Prices Regressed on Lagged GS and Lagged SPY Prices", align = TRUE)
+```
+
+
+<table style="text-align:center"><caption><strong>GS Prices Regressed on Lagged GS and Lagged SPY Prices</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>GS</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">lag(SPY)</td><td>0.587<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.010)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td style="text-align:left">Constant</td><td>69.911<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(1.602)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>2,779</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.536</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.536</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>27.944 (df = 2777)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>3,208.328<sup>***</sup> (df = 1; 2777)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
+
+You may be skeptical at this point. I mean, after all, it isn't that crazy to think that today's GS prices would be related to yesterday's SPY prices. So to illustrate, now we'll simulate two series so we are sure they are not related. Then we will regress one on the lag of the other and show statistical significance. 
+
+The simulated prices are plotted below.
+
+
+```r
+# The function, GBM() from the sde package simulates a geometric brownian motion. Which is the same a assuming prices follow a lognormal ditribution, and is the standard baseline model for prices. 
+library(sde)
+fakeSPY   <- GBM(x = 275, r = 0.15, sigma = .2, T = 1, N=650)
+fakeGS    <- GBM(x = 243, r = 0.10, sigma = .3, T = 1, N=650)
+```
+
+
+```r
+library(broom)
+dates     <- seq(as.Date("2018-01-01"), length = 651, by = "days")
+fakeSPY   <- xts(x=fakeSPY, order.by = dates)
+fakeGS    <- xts(x=fakeGS, order.by = dates)
+
+data      <- cbind(fakeSPY, fakeGS)
+colnames(data) <- c('fakeSPY', 'fakeGS')
+data      <- tidy(data)
+
+ggplot(data, aes(x = index, y = value, color = series)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(title = "Simulated SPY and Simulated GS Prices from 2007 to 2017", x = "")
+```
+
+![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+Now lets run the same regression as we did with the real prices. The regression results are shown in the table. 
+
+$$fakeGS_t = \beta_0 + \beta_1fakeSPY_{t-1}  + \epsilon_t$$
+
+
+```r
+linMod <- lm(fakeGS ~  lag(fakeSPY) )
+stargazer(linMod, type  = "html", title = "Simulated GS Prices Regressed on Lagged Simulated SPY Prices")
+```
+
+
+<table style="text-align:center"><caption><strong>Simulated GS Prices Regressed on Lagged Simulated SPY Prices</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>fakeGS</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">lag(fakeSPY)</td><td>0.495<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.011)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td style="text-align:left">Constant</td><td>81.714<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(3.555)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>650</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.766</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.766</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>13.114 (df = 648)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>2,120.143<sup>***</sup> (df = 1; 648)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
+
+Huh, still crazy significant. It's not a real relationship, but appears to be significant because we didn't have any business doing a t-test here in the first place. We know the regression is meaningless because we simulated these prices to be independent ourselves. That is the problem with non-stationary data in a nutshell, if you regress non-stationary variables on one another, you will always get spurious 'significant' results. 
+
+So what to do? The answer is almost always this: if your data are non-stationary, convert the series into percentage changes by creating variables of logged price differences. In the context of the examples we have been using, that would be
+
+$$SPYReturn_t = log(SPY_t) - log(SPY_{t-1}).  $$
+Plotted, the price returns look like the following. 
+
+```r
+SPYRet    <- log(SPY) - log(lag(SPY))
+GSRet     <- log(GS) - log(lag(GS))
+data      <- cbind(SPYRet, GSRet)
+
+colnames(data) <- c('SPY', 'GS')
+data      <- tidy(data)
+
+ggplot(data, aes(x = index, y = value, color = series)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(title = "SPY Returns and GS Returns from 2007 to 2017", x = "")
+```
+
+![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
+Clearly, this is not exactly white noise. We have clear periods of heightened volatility (we'll cover what to do about that in another post). But, at least the series are not trending up or down. We have solved the problem of non-stationarity by using price percent returns instead of price levels. Just to drive this point home, let's regress GS returns on lagged SPY returns and show they are no longer significant. 
+
+
+```r
+linMod <- lm(GSRet ~  lag(SPYRet) )
+stargazer(linMod, type  = "html", title = "GS Returns Regressed on Lagged SPY Returns")
+```
+
+
+<table style="text-align:center"><caption><strong>GS Returns Regressed on Lagged SPY Returns</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>GSRet</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">lag(SPYRet)</td><td>0.036</td></tr>
+<tr><td style="text-align:left"></td><td>(0.037)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td style="text-align:left">Constant</td><td>0.0001</td></tr>
+<tr><td style="text-align:left"></td><td>(0.0005)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>2,778</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.0003</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>-0.00002</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>0.024 (df = 2776)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>0.944 (df = 1; 2776)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
+
+The statistical significance is gone! Bummer! But really this is good. It is a sign that the returns we generated are in fact stationary. 
+
+# Stationarity Testing
+
+We went through all the discussion above basically assuming that we knew whether or not the data were stationary or not. In real applied research, you always have to make a case whether or not the data are stationary to support your choice to use levels or returns in your analysis. 
+
+There are several stationarity tests, also often called Unit Root tests. I'll list the main ones here. 
+
++ Augmented Dickey-Fuller Test
+    + Null Hypothesis is Unit Root
+    + Reject Null Hypothesis $\Rightarrow$ Series is stationary $\Rightarrow$ Use price levels
+    + Fail to Reject $\Rightarrow$ Series has a unit root $\Rightarrow$ Use price returns
+    + Said and Dickey (1984)
+    
++ Phillips-Perron (PP) Test
+    + Null Hypothesis is Unit Root
+    + Reject Null Hypothesis $\Rightarrow$ Series is stationary $\Rightarrow$ Use price levels
+    + Fail to Reject $\Rightarrow$ Series has a unit root $\Rightarrow$ Use price returns
+    + Perron (1988)
+    
++ KPSS-Test
+    + Null Hypothesis is Stationarity
+    + Reject Null Hypothesis $\Rightarrow$ Series has a Unit Root $\Rightarrow$ Use price returns
+    + Fail to Reject $\Rightarrow$ Series is stationary $\Rightarrow$ Use price levels
+    + Kwiatkowski, Phillips, Schmidt, Shin (1992)
+    
+The trouble facing a researcher is which test to use? Further complicating things is that the tests are generally known to be low power. This means it is pretty easy to fail to reject even when the alternative hypothesis is true, and it is not all that uncommon for the three tests to give conflicting results. 
+
+Because of this, the choice of levels versus returns is more of an art than a science. Also, the burden of proof is higher if you want to use series in levels. That is because there is nothing wrong with using returns of a stationary series, the statistics come out fine and all the stats 101 assumptions will hold. In cases like that it is most common to do the ADF test and move on. Even if it comes out stationary, you can make a case for why you are using returns and that is that. 
+
+However, when your choice to use returns or levels impacts whether or not we should believe your statistics, you may want to run all three and (hopefully) show all three tests are giving the same result, stationary or not.
+
+To illustrate, let's do the ADF, PP, and KPSS tests on the SPY and GS price series. 
+
+
+
+
+```r
+library(tseries)
+library(kableExtra)
+library(knitr)
+adfSPY    <- tidy(adf.test(SPY))
+adfGS     <- tidy(adf.test(GS))
+ppSPY     <- tidy(pp.test(SPY))
+ppGS      <- tidy(pp.test(GS))
+kpssSPY   <- tidy(kpss.test(SPY))
+kpssGS    <- tidy(kpss.test(GS))
+
+kpssGS$alternative   <-  "unit root"
+kpssSPY$alternative  <-  "unit root"
+unitroot  <- rbind(adfSPY, ppSPY, kpssSPY, adfGS, ppGS, kpssGS)
+```
+
+### Unit Root and Stationarity Test Results for SPY and GS
+
+```r
+unitroot[, c(1, 2, 4, 5)] %>% 
+  kable("html") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover")) %>% 
+  group_rows("SPY", 1, 3) %>% 
+  group_rows("GS", 4, 6)
+```
+
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:right;"> statistic </th>
+   <th style="text-align:right;"> p.value </th>
+   <th style="text-align:left;"> method </th>
+   <th style="text-align:left;"> alternative </th>
+  </tr></thead>
+<tbody>
+<tr grouplength="3"><td colspan="4" style="border-bottom: 1px solid;"><strong>SPY</strong></td></tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentlevel="1"> -1.225511 </td>
+   <td style="text-align:right;"> 0.9023739 </td>
+   <td style="text-align:left;"> Augmented Dickey-Fuller Test </td>
+   <td style="text-align:left;"> stationary </td>
+  </tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentlevel="1"> -3.461715 </td>
+   <td style="text-align:right;"> 0.9134466 </td>
+   <td style="text-align:left;"> Phillips-Perron Unit Root Test </td>
+   <td style="text-align:left;"> stationary </td>
+  </tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentlevel="1"> 18.749700 </td>
+   <td style="text-align:right;"> 0.0100000 </td>
+   <td style="text-align:left;"> KPSS Test for Level Stationarity </td>
+   <td style="text-align:left;"> unit root </td>
+  </tr>
+<tr grouplength="3"><td colspan="4" style="border-bottom: 1px solid;"><strong>GS</strong></td></tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentLevel="1"> -2.105840 </td>
+   <td style="text-align:right;"> 0.5335150 </td>
+   <td style="text-align:left;"> Augmented Dickey-Fuller Test </td>
+   <td style="text-align:left;"> stationary </td>
+  </tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentLevel="1"> -7.503883 </td>
+   <td style="text-align:right;"> 0.6912123 </td>
+   <td style="text-align:left;"> Phillips-Perron Unit Root Test </td>
+   <td style="text-align:left;"> stationary </td>
+  </tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentLevel="1"> 6.696515 </td>
+   <td style="text-align:right;"> 0.0100000 </td>
+   <td style="text-align:left;"> KPSS Test for Level Stationarity </td>
+   <td style="text-align:left;"> unit root </td>
+  </tr>
+</tbody>
+</table>
+
+Notice that in these examples, the results are not controversial all tests point toward there being unit roots in SPY and GS prices. We fail to reject the null hypothesis in all tests where unit root is the null hypothesis, and we reject the null hypothesis for all tests where unit root is the alternative hypothesis. 
+
+Stay tuned for the next posts in this series where I will explain the next basic issues in time-series econometrics. 
+
++ Determining if Variables "Move Together" or are Otherwise Correlated
+
++ Adjusting for Residuals that may not be Perfect "White Noise"
+
+
 
 # Books to Get You Started
 
@@ -97,3 +418,13 @@ Now that you know the game we play in time-series analysis, you might be interes
 Recently, I found Constantin Colonescu's "Using R for Principles of Econometrics" (for now, a draft is available for free [here](https://bookdown.org/ccolonescu/RPoE4/)). What I really like about this book is that it can be effectively used to both learn applied econometrics and also to learn how to do applied econometrics in R.   
 
 [![Using R for Principles of Econometrics](images/RPrinciplesMetrics.png)](http://www.lulu.com/shop/constantin-colonescu/using-r-for-principles-of-econometrics/paperback/product-23467421.html)
+
+# References
+
+Kwiatkowski, D., Phillips, P. C., Schmidt, P., & Shin, Y. (1992). "Testing the null hypothesis of stationarity against the alternative of a unit root: How sure are we that economic time series have a unit root?" *Journal of econometrics*, 54(1-3), 159-178.
+
+Perron, P. (1988). "Trends and random walks in macroeconomic time series: Further evidence from a new approach." *Journal of economic dynamics and control*, 12(2), 297-332.
+
+Said, S. E., & Dickey, D. A. (1984). "Testing for unit roots in autoregressive-moving average models of unknown order." *Biometrika*, 71(3), 599-607.
+
+

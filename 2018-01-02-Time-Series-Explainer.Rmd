@@ -155,6 +155,7 @@ You may be skeptical at this point. I mean, after all, it isn't that crazy to th
 The simulated prices are plotted below.
 
 ```{r, echo = TRUE}
+# The function, GBM() from the sde package simulates a geometric brownian motion. Which is the same a assuming prices follow a lognormal ditribution, and is the standard baseline model for prices. 
 library(sde)
 fakeSPY   <- GBM(x = 275, r = 0.15, sigma = .2, T = 1, N=650)
 fakeGS    <- GBM(x = 243, r = 0.10, sigma = .3, T = 1, N=650)
