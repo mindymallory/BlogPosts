@@ -21,6 +21,7 @@ The code below pulls SPY prices from Yahoo Finance, converts them to percent ret
 # install.packages('broom')
 # install.packages('tseries')
 # install.packages("kableExtra")
+# install.packages("kable")
 # install.packages("knitr")
 # install.packages("forecast")
 
@@ -135,19 +136,69 @@ r^{SPY}_t &= \beta_0 + \beta_1r^{SPY}_{t-1} + \beta_2r^{SPY}_{t-2} + \epsilon_t 
 \end{align}
 
 
+The following code generates lags of the returns to put on the right hand side of the regression equation, and the last line does the estimation.
 
 
 ```r
-SPYRet_xts1   <- lag(SPYRet_xts)
-SPYRet_xts2   <- lag(SPYRet_xts1)
-AR2           <- lm(SPYRet_xts ~  SPYRet_xts1 + SPYRet_xts2)
+SPYRet_1   <- lag(SPYRet_xts)
+SPYRet_2   <- lag(SPYRet_1)
+AR2           <- lm(SPYRet_xts ~  SPYRet_1 + SPYRet_2)
 ```
+
+
+### Estimated AR(2) Model
 
 ```r
-tidy(AR2)
+library(kableExtra)
+library(knitr)
+library(tibble)
+library(broom)
+
+AR2           <- tidy(AR2, stringsAsFactors = FALSE) 
+AR2           <- cbind(AR2[, 1], round(AR2[, 2:5], digits = 2))
+colnames(AR2) <- c('Variable', 'Beta Estimate', 'Std. Error', 't-statistic', 'P-Value')
+
+AR2 %>% 
+  kable("html") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
-         term      estimate    std.error statistic      p.value
-1 (Intercept)  0.0003819429 0.0002371663  1.610444 1.074149e-01
-2 SPYRet_xts1 -0.0894985039 0.0189258301 -4.728908 2.370185e-06
-3 SPYRet_xts2 -0.0817689778 0.0189243518 -4.320834 1.609093e-05
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Variable </th>
+   <th style="text-align:right;"> Beta Estimate </th>
+   <th style="text-align:right;"> Std. Error </th>
+   <th style="text-align:right;"> t-statistic </th>
+   <th style="text-align:right;"> P-Value </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> (Intercept) </td>
+   <td style="text-align:right;"> 0.00 </td>
+   <td style="text-align:right;"> 0.00 </td>
+   <td style="text-align:right;"> 1.65 </td>
+   <td style="text-align:right;"> 0.1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SPYRet_1 </td>
+   <td style="text-align:right;"> -0.09 </td>
+   <td style="text-align:right;"> 0.02 </td>
+   <td style="text-align:right;"> -4.74 </td>
+   <td style="text-align:right;"> 0.0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SPYRet_2 </td>
+   <td style="text-align:right;"> -0.08 </td>
+   <td style="text-align:right;"> 0.02 </td>
+   <td style="text-align:right;"> -4.32 </td>
+   <td style="text-align:right;"> 0.0 </td>
+  </tr>
+</tbody>
+</table>
+
+
+
+
+
