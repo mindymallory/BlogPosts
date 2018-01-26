@@ -1,14 +1,6 @@
----
-title: "Basic Time-Series Analysis, the Game"
-output:
-  html_document:
-    keep_md: true
----
+# Basic Time-Series Analysis, the Game
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = TRUE)
 
-```
 
 <meta property="og:title" content="Basic Time-Series Analysis, the Game">
 <meta property="og:description" content="Even for students who are well trained in econometrics-statistics, getting started with time-series analysis can be mystifying.">
@@ -55,8 +47,8 @@ In the figure below I simulate and plot a stationary series. The series comes fr
 
 That is basically what stationarity means, all the data come from a single probability distribution. 
 
-```{r}
 
+```r
 # If you are following along, uncomment the next lines and run once to install the required packages 
 # install.packages('ggplot2')
 # install.packages('xts')
@@ -90,8 +82,9 @@ autoplot(p, ts.colour = "dark blue") +
   labs(title = "Fake Stationary Price Series Centered around P = $300", x = "", y = "Price") + 
   theme_bw() + 
   scale_x_date(date_labels = "%m-%d-%Y", date_breaks = "3 month")
-
 ```
+
+![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 When you look at this plot it is not hard to imagine that it came from draws from a single probability distribution, namely:
 
@@ -103,18 +96,26 @@ We need our data to be stationary in order to be able to do statistical tests an
 
 Below I plot SPY, the exchange traded fund that tracks the S&P 500 Index, from 1990 to 2017. By visual inspection you should have a sense that this series is non-stationary in that the prices appear to be trending. 
 
-```{r}
+
+```r
 library(quantmod)
 getSymbols(c('SPY', 'GS'))
 ```
 
-```{r}
+```
+## [1] "SPY" "GS"
+```
+
+
+```r
 # In Yahoo Finance data, the Adjusted column accounts for any stock splits that may have taken place.
 autoplot(SPY$SPY.Adjusted) + 
   theme_bw() + 
   geom_line(color = "dark blue") + 
   labs(title = "SPY Prices from 2007 to 2017", x = "")
 ```
+
+![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 
 So for example, if you wanted to write down the probability distribution that generate the prices, you would have to know where you are in time. Since the probability distribution that generated the prices keeps changing over time, the distribution is not stationary. This fact will mess up our statistical analysis. 
@@ -142,7 +143,8 @@ $$GS_t = \beta_0 + \beta_1SPY_{t-1}  + \epsilon_t$$
 The results of the regression are printed below. We find that lagged SPY prices are highly statistically significant predictors of GS prices. If you take these results to the stock market and think you can predict GS prices you will probably be very poor very soon. 
 
 The problem is that the 'statistical significance' comes from the fact that we just ran a super-consistent regression. That basically means that since the variables we used in the regression are (probably, we didn't prove it here) non-stationary pretty much any regression we run will conclude statistical significance in a typical t-test. In other words, the regression results below aren't valid because the statistic doesn't follow the t distribution in the first place, but when you go along as it it does follow the t distribution, you will get 'significant' results almost every time. 
-```{r, results = "asis"}
+
+```r
 library(stargazer)
 GS <- GS$GS.Adjusted
 SPY <- SPY$SPY.Adjusted
@@ -150,19 +152,39 @@ linMod <- lm(GS ~  lag(SPY))
 stargazer(linMod, type  = "html", title = "GS Prices Regressed on Lagged GS and Lagged SPY Prices", align = TRUE)
 ```
 
+
+<table style="text-align:center"><caption><strong>GS Prices Regressed on Lagged GS and Lagged SPY Prices</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>GS</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">lag(SPY)</td><td>0.587<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.010)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td style="text-align:left">Constant</td><td>69.911<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(1.602)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>2,779</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.536</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.536</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>27.944 (df = 2777)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>3,208.328<sup>***</sup> (df = 1; 2777)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
+
 You may be skeptical at this point. I mean, after all, it isn't that crazy to think that today's GS prices would be related to yesterday's SPY prices. So to illustrate, now we'll simulate two series so we are sure they are not related. Then we will regress one on the lag of the other and show statistical significance. 
 
 The simulated prices are plotted below.
 
-```{r, echo = TRUE}
+
+```r
 # The function, GBM() from the sde package simulates a geometric brownian motion. Which is the same a assuming prices follow a lognormal ditribution, and is the standard baseline model for prices. 
 library(sde)
 fakeSPY   <- GBM(x = 275, r = 0.15, sigma = .2, T = 1, N=650)
 fakeGS    <- GBM(x = 243, r = 0.10, sigma = .3, T = 1, N=650)
-
 ```
 
-```{r}
+
+```r
 library(broom)
 dates     <- seq(as.Date("2018-01-01"), length = 651, by = "days")
 fakeSPY   <- xts(x=fakeSPY, order.by = dates)
@@ -176,17 +198,38 @@ ggplot(data, aes(x = index, y = value, color = series)) +
   geom_line() + 
   theme_bw() +
   labs(title = "Simulated SPY and Simulated GS Prices from 2007 to 2017", x = "")
-
 ```
+
+![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 Now lets run the same regression as we did with the real prices. The regression results are shown in the table. 
 
 $$fakeGS_t = \beta_0 + \beta_1fakeSPY_{t-1}  + \epsilon_t$$
 
-```{r, results = "asis"}
+
+```r
 linMod <- lm(fakeGS ~  lag(fakeSPY) )
 stargazer(linMod, type  = "html", title = "Simulated GS Prices Regressed on Lagged Simulated SPY Prices")
 ```
+
+
+<table style="text-align:center"><caption><strong>Simulated GS Prices Regressed on Lagged Simulated SPY Prices</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>fakeGS</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">lag(fakeSPY)</td><td>0.495<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.011)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td style="text-align:left">Constant</td><td>81.714<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(3.555)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>650</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.766</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.766</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>13.114 (df = 648)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>2,120.143<sup>***</sup> (df = 1; 648)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
 
 Huh, still crazy significant. It's not a real relationship, but appears to be significant because we didn't have any business doing a t-test here in the first place. We know the regression is meaningless because we simulated these prices to be independent ourselves. That is the problem with non-stationary data in a nutshell, if you regress non-stationary variables on one another, you will always get spurious 'significant' results. 
 
@@ -194,7 +237,8 @@ So what to do? The answer is almost always this: if your data are non-stationary
 
 $$SPYReturn_t = log(SPY_t) - log(SPY_{t-1}).  $$
 Plotted, the price returns look like the following. 
-```{r}
+
+```r
 SPYRet    <- log(SPY) - log(lag(SPY))
 GSRet     <- log(GS) - log(lag(GS))
 data      <- cbind(SPYRet, GSRet)
@@ -206,15 +250,36 @@ ggplot(data, aes(x = index, y = value, color = series)) +
   geom_line() + 
   theme_bw() +
   labs(title = "SPY Returns and GS Returns from 2007 to 2017", x = "")
-
 ```
+
+![](2018-01-02-Time-Series-Explainer_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 Clearly, this is not exactly white noise. We have clear periods of heightened volatility (we'll cover what to do about that in another post). But, at least the series are not trending up or down. We have solved the problem of non-stationarity by using price percent returns instead of price levels. Just to drive this point home, let's regress GS returns on lagged SPY returns and show they are no longer significant. 
 
-```{r, results = "asis"}
+
+```r
 linMod <- lm(GSRet ~  lag(SPYRet) )
 stargazer(linMod, type  = "html", title = "GS Returns Regressed on Lagged SPY Returns")
 ```
+
+
+<table style="text-align:center"><caption><strong>GS Returns Regressed on Lagged SPY Returns</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>GSRet</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">lag(SPYRet)</td><td>0.036</td></tr>
+<tr><td style="text-align:left"></td><td>(0.037)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td style="text-align:left">Constant</td><td>0.0001</td></tr>
+<tr><td style="text-align:left"></td><td>(0.0005)</td></tr>
+<tr><td style="text-align:left"></td><td></td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>2,778</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.0003</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>-0.00002</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>0.024 (df = 2776)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>0.944 (df = 1; 2776)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
 
 The statistical significance is gone! Bummer! But really this is good. It is a sign that the returns we generated are in fact stationary. 
 
@@ -252,7 +317,8 @@ To illustrate, let's do the ADF, PP, and KPSS tests on the SPY and GS price seri
 
 
 
-```{r}
+
+```r
 library(tseries)
 library(kableExtra)
 library(knitr)
@@ -269,13 +335,63 @@ unitroot  <- rbind(adfSPY, ppSPY, kpssSPY, adfGS, ppGS, kpssGS)
 ```
 
 ### Unit Root and Stationarity Test Results for SPY and GS
-```{r, results = 'asis'}
+
+```r
 unitroot[, c(1, 2, 4, 5)] %>% 
   kable("html") %>% 
   kable_styling(bootstrap_options = c("striped", "hover")) %>% 
   group_rows("SPY", 1, 3) %>% 
   group_rows("GS", 4, 6)
 ```
+
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:right;"> statistic </th>
+   <th style="text-align:right;"> p.value </th>
+   <th style="text-align:left;"> method </th>
+   <th style="text-align:left;"> alternative </th>
+  </tr></thead>
+<tbody>
+<tr grouplength="3"><td colspan="4" style="border-bottom: 1px solid;"><strong>SPY</strong></td></tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentlevel="1"> -1.225511 </td>
+   <td style="text-align:right;"> 0.9023739 </td>
+   <td style="text-align:left;"> Augmented Dickey-Fuller Test </td>
+   <td style="text-align:left;"> stationary </td>
+  </tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentlevel="1"> -3.461715 </td>
+   <td style="text-align:right;"> 0.9134466 </td>
+   <td style="text-align:left;"> Phillips-Perron Unit Root Test </td>
+   <td style="text-align:left;"> stationary </td>
+  </tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentlevel="1"> 18.749700 </td>
+   <td style="text-align:right;"> 0.0100000 </td>
+   <td style="text-align:left;"> KPSS Test for Level Stationarity </td>
+   <td style="text-align:left;"> unit root </td>
+  </tr>
+<tr grouplength="3"><td colspan="4" style="border-bottom: 1px solid;"><strong>GS</strong></td></tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentLevel="1"> -2.105840 </td>
+   <td style="text-align:right;"> 0.5335150 </td>
+   <td style="text-align:left;"> Augmented Dickey-Fuller Test </td>
+   <td style="text-align:left;"> stationary </td>
+  </tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentLevel="1"> -7.503883 </td>
+   <td style="text-align:right;"> 0.6912123 </td>
+   <td style="text-align:left;"> Phillips-Perron Unit Root Test </td>
+   <td style="text-align:left;"> stationary </td>
+  </tr>
+<tr>
+<td style="text-align:right; padding-left: 2em;" indentLevel="1"> 6.696515 </td>
+   <td style="text-align:right;"> 0.0100000 </td>
+   <td style="text-align:left;"> KPSS Test for Level Stationarity </td>
+   <td style="text-align:left;"> unit root </td>
+  </tr>
+</tbody>
+</table>
 
 Notice that in these examples, the results are not controversial all tests point toward there being unit roots in SPY and GS prices. We fail to reject the null hypothesis in all tests where unit root is the null hypothesis, and we reject the null hypothesis for all tests where unit root is the alternative hypothesis. 
 
