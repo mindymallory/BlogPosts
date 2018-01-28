@@ -1,0 +1,19 @@
+---
+title: "Basic Time-Series Analysis: Single Equation Models (ARIMA)"
+output:
+  html_document
+---
+
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+*This post is the third in a series explaining [Basic Time Series Analysis](http://blog.mindymallory.com/2018/01/basic-time-series-analysis-the-game/). Click the link to check out the first post which focused on stationarity versus non-stationarity, and to find a list of other topics covered. As a reminder, this post is intended to be a very applied example of how use certain tests and models in a time-sereis analysis, either to get someone started learning about time-series techniques or to provide a big-picture perspective to someone taking a formal time-series class where the stats are coming fast and furious. As in the first post, the code producing these examples is provided for those who want to follow along in R. If you aren't into R, just ignore the code blocks and the intuition will follow.* 
+
+Continue previous examples, we will use SPY prices to illustrate the topic of this post.
+
+The plot below shows SPY price returns from 2007 through 2017. In the previous post, we were concerned with models of the mean of this series that accounted for autocorrelation in the returns series. However, we found that Standard models (the ARIMA family of models) didn't give us much forecasting power. 
+
+http://curiousquant.com/ClassNotes/FinMetrics/Practicals/Practical_6/Practical_6.html  

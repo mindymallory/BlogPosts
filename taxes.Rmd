@@ -1,0 +1,48 @@
+---
+title: "Tax Reform and Corporate Investment for Growth"
+output: html_document
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+```{r}
+library(dfoptim)
+# Parameters
+
+p     <- 140   # Output price
+w     <- 15    # wage rate
+r     <- 15    # rental rate on capital
+alpha <- .15   # Cobb-Douglass parameter on capital
+beta  <- .15   # Cobb-Douglass parameter on labor
+gamma <- 2.5    # Productivity enhancement of investment
+delta <- 1    # Time Discount
+A     <- 1000
+t     <- .30   # Corporate tax rate
+
+invest <- function(x) {
+  pi_1   <- p*A*x[1]^alpha*x[2]^beta - r*x[1] - w*x[2]
+  pi_2   <- p*(1+x[5]/pi_1)^gamma*A*x[3]^alpha*x[4]^beta - r*x[3] - w*x[4]
+  
+  profit <- log((1-t)*pi_1-x[5]) + delta*log((1-t)*pi_2)
+  return(-profit)
+}
+
+# Choice Variables: capital and labor in both periods, and investment for future productivity
+#          1    2    3    4     5
+#          k0   l0   k1   l1    i         
+x0     <- c(5, 5, 5, 5, 0)    
+optim(x0, invest)
+
+
+t_all <- seq(0, .50, by = .1)
+result <- list()
+for (i in 1:length(t)){
+  t <- t_all[i]
+  result[[i]] <- optim(x0, invest)   
+}
+# For some reason, not stable
+
+```
