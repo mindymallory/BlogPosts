@@ -1,5 +1,5 @@
 ---
-title: "Basic Time-Series Analysis: Single Equation Models (ARIMA)"
+title: "Basic Time-Series Analysis: Modeling Volatility (GARCH)"
 output:
   html_document
 ---
@@ -12,8 +12,113 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 *This post is the third in a series explaining [Basic Time Series Analysis](http://blog.mindymallory.com/2018/01/basic-time-series-analysis-the-game/). Click the link to check out the first post which focused on stationarity versus non-stationarity, and to find a list of other topics covered. As a reminder, this post is intended to be a very applied example of how use certain tests and models in a time-sereis analysis, either to get someone started learning about time-series techniques or to provide a big-picture perspective to someone taking a formal time-series class where the stats are coming fast and furious. As in the first post, the code producing these examples is provided for those who want to follow along in R. If you aren't into R, just ignore the code blocks and the intuition will follow.* 
 
-Continue previous examples, we will use SPY prices to illustrate the topic of this post.
+In this post we will learn a standard technique for modelling volatilty in series of prices. This post will build on the previous post, [Basic Time-Series Analysis, Single Equation Models (ARIMA)](http://blog.mindymallory.com/2018/01/basic-time-series-analysis-single-equation-models-arima/), where we learned the useful techniques of using recent returns (AR) and residuals (MA) to explain Price returns. 
 
-The plot below shows SPY price returns from 2007 through 2017. In the previous post, we were concerned with models of the mean of this series that accounted for autocorrelation in the returns series. However, we found that Standard models (the ARIMA family of models) didn't give us much forecasting power. 
+To model volatity of returns the standard approach is to use recent realizations of the error structure to predict future realizations of the error structure. Put more simply, we often see clustering in periods of high or low volatilty, so we can exploit the recent volatility to predict current or near futures volatilty.
 
-http://curiousquant.com/ClassNotes/FinMetrics/Practicals/Practical_6/Practical_6.html  
+Continuing previous examples, we will use SPY prices to illustrate the topic of this post.
+
+The plot below shows SPY price returns from 2007 through 2017. 
+
+
+
+```{r}
+# If you are following along in R, uncomment the next lines and run once to install the required packages 
+# install.packages('ggplot2')
+# install.packages('xts')
+# install.packages('quantmod')
+# install.packages('broom')
+# install.packages('rugarch')
+# install.packages('tibble')
+library(quantmod)
+library(ggplot2)
+library(broom)
+getSymbols(c('SPY'))
+
+SPY              <- SPY$SPY.Adjusted
+SPYRet           <- log(SPY) - log(lag(SPY))
+SPYRet_xts       <- SPYRet
+colnames(SPYRet) <- c('SPY')
+SPYRet           <- tidy(SPYRet)
+
+ggplot(SPYRet, aes(x = index, y = value, color = series)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(title = "SPY Returns Returns from 2007 to 2017", x = "")
+```
+As a reminder, the over-arching goal of time-series analysis is to model the changing mean and variance of the series. 
+
+$$r^{SPY}_t \sim N(\mu_t, \sigma_t^2)$$
+The previous post used the ARIMA model to give structure to the changing mean of the series of price returns. Since the ARIMA model assumed constant variance, and the figure of SPY returns clearly has changing variance over time, this is a problem. 
+
+Next, while we can see the changing variance plainly in the series of returns above, variance is usually visuallized in the data by plotting the absolute value of price returns,  
+
+$$\left| r^{SPY}_t \right|, $$
+
+or the square of price returns,
+
+$$\left( r^{SPY}_t \right)^2.$$  
+
+Both cases make sense since the variance is always a positive number, and influcened by deviations from the mean. This is only true, of course, if we know that the return series has mean 0, $r^{SPY}_t = 0 + \epsilon_t$. *If* this is true, then the average square of returns is the sample variance, 
+
+$$\sigma_t^2 = \sum_1^{n} \left( r^{SPY}_t \right)^2.$$
+
+In price data, this is almost always nearly true for percent returns. If the mean return is non-zero, then we can just use $\sigma_t^2 = \sum_1^{n} \left( r^{SPY}_t - \mu\right)^2$, or even more advanced would be to plot the squared errors from an ARIMA model. Since we did not find very strong ARMA effects in the previous post, and especially since the intercept (mean) was zero, we can get a good sense of daily variance of SPY price returns by plotting daily squared returns. 
+
+```{r}
+library(tibble)
+square <- SPYRet$value^2
+SPYRet <- add_column(SPYRet, Square = square)
+
+
+
+ggplot(SPYRet, aes(x = index, y = Square, color = series)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(title = "SPY Squared Returns from 2007 to 2017", x = "")
+
+```
+
+
+
+
+
+
+
+
+\begin{align}
+r_t=\mu+\varepsilon_t  \\
+\varepsilon_t = \sigma_t.z_t \\
+\sigma_t^2=\alpha + \beta_1\varepsilon_{t-1}^2+\beta_1\sigma_{t-1}^2\\
+z_t \sim \mathcal{N}(0,1)
+\end{align}
+
+
+```{r}
+library(rugarch)
+
+garch11        <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1, 1)), 
+                            mean.model = list(armaOrder = c(1, 1), include.mean = FALSE), 
+                            distribution.model = "std")
+
+garchfit       <- ugarchfit(spec = garch11, data = SPYRet_xts["2007-02-01/"], solver = "hybrid")
+garchfit
+```
+
+```{r}
+spec           <- getspec(garchfit)
+setfixed(spec) <- as.list(coef(garchfit))
+garchforecast1 <- ugarchforecast(spec, n.ahead = 1, n.roll = 2499, data = SPYRet_xts["2007-02-01/"], out.sample = 2500)
+
+plot(garchforecast1, which = 4)
+```
+
+
+
+
+
+
+
+
+
+
