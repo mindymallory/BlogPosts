@@ -67,15 +67,19 @@ In price data, this is almost always nearly true for percent returns. If the mea
 
 ```{r}
 library(tibble)
-square <- SPYRet$value^2
-SPYRet <- add_column(SPYRet, Square = square)
+SPYRet <- add_column(SPYRet, Square = SPYRet$value^2, ABSol = abs(SPYRet$value))
 
 
 
-ggplot(SPYRet, aes(x = index, y = Square, color = series)) + 
+ggplot(SPYRet, aes(x = index, y = SquaredReturns, color = series)) + 
   geom_line() + 
   theme_bw() +
   labs(title = "SPY Squared Returns from 2007 to 2017", x = "")
+
+ggplot(SPYRet, aes(x = index, y = AbsoluteReturns, color = series)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(title = "SPY Absolute Value of Returns from 2007 to 2017", x = "")
 
 ```
 
