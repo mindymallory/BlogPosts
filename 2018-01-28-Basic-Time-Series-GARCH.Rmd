@@ -6,21 +6,17 @@ output:
 
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = TRUE)
 
 ```
 
-*This post is the third in a series explaining [Basic Time Series Analysis](http://blog.mindymallory.com/2018/01/basic-time-series-analysis-the-game/). Click the link to check out the first post which focused on stationarity versus non-stationarity, and to find a list of other topics covered. As a reminder, this post is intended to be a very applied example of how use certain tests and models in a time-sereis analysis, either to get someone started learning about time-series techniques or to provide a big-picture perspective to someone taking a formal time-series class where the stats are coming fast and furious. As in the first post, the code producing these examples is provided for those who want to follow along in R. If you aren't into R, just ignore the code blocks and the intuition will follow.* 
+*This post is the third in a series explaining [Basic Time Series Analysis](http://blog.mindymallory.com/2018/01/basic-time-series-analysis-the-game/). Click the link to check out the first post which focused on stationarity versus non-stationarity, and to find a list of other topics covered. As a reminder, this post is intended to be a very applied example of how use certain tests and models in time-sereis analysis, either to get someone started learning about time-series techniques or to provide a big-picture perspective to someone taking a formal time-series class where the stats are coming fast and furious. As in the first post, the code producing these examples is provided for those who want to follow along in R. If you aren't into R, just ignore the code blocks and the intuition will follow.* 
 
-In this post we will learn a standard technique for modelling volatilty in series of prices. This post will build on the previous post, [Basic Time-Series Analysis, Single Equation Models (ARIMA)](http://blog.mindymallory.com/2018/01/basic-time-series-analysis-single-equation-models-arima/), where we learned the useful techniques of using recent returns (AR) and residuals (MA) to explain Price returns. 
+In this post we will learn a standard technique for modelling volatility in a series of prices, the generalized auto-regressive conditional heteroskedasticity (GARCH). We build on the previous post, [Basic Time-Series Analysis, Single Equation Models (ARIMA)](http://blog.mindymallory.com/2018/01/basic-time-series-analysis-single-equation-models-arima/), where we learned the useful techniques of using recent returns (AR) and residuals (MA) to explain price returns. 
 
-To model volatity of returns the standard approach is to use recent realizations of the error structure to predict future realizations of the error structure. Put more simply, we often see clustering in periods of high or low volatilty, so we can exploit the recent volatility to predict current or near futures volatilty.
+The idea of the GARCH model of price volatility is to use recent realizations of the error structure to predict future realizations of the error structure. Put more simply, we often see clustering in periods of high or low volatility, so we can exploit the recent volatility to predict volatility in the near future.
 
-Continuing previous examples, we will use SPY prices to illustrate the topic of this post.
-
-The plot below shows SPY price returns from 2007 through 2017. 
-
-
+Continuing the examples in previous posts, we will use SPY prices to illustrate volatility modeling. The plot below shows SPY price returns from 2007 through 2017. 
 
 ```{r}
 # If you are following along in R, uncomment the next lines and run once to install the required packages 
@@ -46,12 +42,13 @@ ggplot(SPYRet, aes(x = index, y = value, color = series)) +
   theme_bw() +
   labs(title = "SPY Returns Returns from 2007 to 2017", x = "")
 ```
-As a reminder, the over-arching goal of time-series analysis is to model the changing mean and variance of the series. 
+   
+As a reminder, the over-arching goal of of this and the previous posts has been to model the changing mean and variance of the price return series. 
 
 $$r^{SPY}_t \sim N(\mu_t, \sigma_t^2)$$
-The previous post used the ARIMA model to give structure to the changing mean of the series of price returns. Since the ARIMA model assumed constant variance, and the figure of SPY returns clearly has changing variance over time, this is a problem. 
+The previous post used the ARIMA model to give structure to the changing mean of the series of price returns. Since the ARIMA model assumed constant variance, and the figure of SPY returns clearly has changing variance over time, this is something that can be improved upon, and the GARCH model is one way of accomplishing this. 
 
-Next, while we can see the changing variance plainly in the series of returns above, variance is usually visuallized in the data by plotting the absolute value of price returns,  
+Next, we will go through two ways that are commonly used to visualize the changing variance of returns. These are plotting the absolute value of price returns,  
 
 $$\left| r^{SPY}_t \right|, $$
 
@@ -59,55 +56,96 @@ or the square of price returns,
 
 $$\left( r^{SPY}_t \right)^2.$$  
 
-Both cases make sense since the variance is always a positive number, and influcened by deviations from the mean. This is only true, of course, if we know that the return series has mean 0, $r^{SPY}_t = 0 + \epsilon_t$. *If* this is true, then the average square of returns is the sample variance, 
+Both cases make sense since the variance is always a positive number, and influenced by deviations from the mean. This is only true, of course, if we know that the return series has mean 0, $r^{SPY}_t  = 0 + \epsilon_t$. *If* this is true, then the average of squared returns is the sample variance, 
 
-$$\sigma_t^2 = \sum_1^{n} \left( r^{SPY}_t \right)^2.$$
+$$\hat{\sigma}_t^2 = \sum_1^{n} \left( r^{SPY}_t \right)^2.$$
 
-In price data, this is almost always nearly true for percent returns. If the mean return is non-zero, then we can just use $\sigma_t^2 = \sum_1^{n} \left( r^{SPY}_t - \mu\right)^2$, or even more advanced would be to plot the squared errors from an ARIMA model. Since we did not find very strong ARMA effects in the previous post, and especially since the intercept (mean) was zero, we can get a good sense of daily variance of SPY price returns by plotting daily squared returns. 
+In price data, percent returns are almost have a mean very near to 0. If the mean return is non-zero, then we can just plot $\left( r^{SPY}_t - \mu\right)^2$, or use the squared errors from an ARIMA model. Since we did not find very strong ARMA effects in the previous post, and especially since the intercept (mean) was zero, we can get a good sense of daily variance of SPY price returns by simply plotting daily squared returns or daily absolute value of returns. 
 
 ```{r}
 library(tibble)
-SPYRet <- add_column(SPYRet, Square = SPYRet$value^2, ABSol = abs(SPYRet$value))
-
-
-
-ggplot(SPYRet, aes(x = index, y = SquaredReturns, color = series)) + 
-  geom_line() + 
-  theme_bw() +
-  labs(title = "SPY Squared Returns from 2007 to 2017", x = "")
+SPYRet <- add_column(SPYRet, SquaredReturns = SPYRet$value^2, AbsoluteReturns = abs(SPYRet$value))
 
 ggplot(SPYRet, aes(x = index, y = AbsoluteReturns, color = series)) + 
   geom_line() + 
   theme_bw() +
   labs(title = "SPY Absolute Value of Returns from 2007 to 2017", x = "")
 
+ggplot(SPYRet, aes(x = index, y = SquaredReturns, color = series)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(title = "SPY Squared Returns from 2007 to 2017", x = "")
 ```
 
 
+# The GARCH Model of Volatity
 
-
-
-
-
+The plain vanilla (there are [*sooo* many variations](https://en.wikipedia.org/wiki/Autoregressive_conditional_heteroskedasticity) of the GARCH model) GARCH model is as follows:
 
 \begin{align}
-r_t=\mu+\varepsilon_t  \\
-\varepsilon_t = \sigma_t.z_t \\
-\sigma_t^2=\alpha + \beta_1\varepsilon_{t-1}^2+\beta_1\sigma_{t-1}^2\\
-z_t \sim \mathcal{N}(0,1)
+r_t &=\mu+\varepsilon_t  \\
+\varepsilon_t &= \sigma_t.z_t \\
+\sigma_t^2 &=\omega + \alpha_1\sigma_{t-1}^2 + \beta_1\varepsilon_{t-1}^2\\
+z_t &\sim \mathcal{N}(0,1).
 \end{align}
+
+The first line is an equation to model the mean. As presented here there are no ARMA effects, but they could easily be thrown in if you find they are important. There is only an intercept and an error term. The next three lines put more structure on the error term, but it can be confusing what is going on here. 
+
+I find the second line particularly confusing. Why do we multiply two things to get $\epsilon_t$ rather than add like you would normally see in a regression error term?
+
+To see this, it is important to keep the goal in mind here. We are looking for a model that will give us a changing variance of $r^{SPY}_t$. Namely, to find a model for $r^{SPY}_t$ that has the following basic form:
+
+$$r^{SPY}_t \sim \mathcal{N}(\mu, \sigma_t^2)$$
+
+So if the basic return model is $r^{SPY}_t =\mu+\varepsilon_t$, it better be the case that $Var(\mu+\varepsilon_t) = \sigma_t^2$. 
+
+The next steps rely on the [properties of the variance of random variables](https://en.wikipedia.org/wiki/Variance). Specifically, if $a$ and $b$ are a constants and $X$ is a random variable, $Var(a + bX) = b^2Var(X)$.
+
+\begin{align}
+Var(r^{SPY}_t) &= Var(\mu+\varepsilon_t) \\
+               &= Var(\varepsilon_t)
+\end{align}
+
+So if we come up with a model for $\varepsilon_t$ so that it's variance depends on recent volatility and is big when recent volatility is big and is small when recent volatility is small, we will have created a model of conditional heteroskedasticity.
+
+Consider the second line in the GARCH model. 
+
+$$\varepsilon_t = \sigma_t.z_t$$
+
+Notice that $\sigma_t$ is a constant, it is just a linear combination of past $\sigma^2$'s and past $\epsilon^2$'s, so it is known at time *t*.
+
+\begin{align}
+Var(r^{SPY}_t) &= Var(\mu+\varepsilon_t) \\
+               &= Var(\varepsilon_t) \text{      since } \mu \text{ is a constant}\\
+               &=Var(\sigma_t, z_t) \\
+               &=\sigma_t^2Var(z_t) \text{       since } \sigma^2_t \text{ is a constant}\\
+               &=\sigma_t^2
+\end{align}
+
+The last line follows since $z_t \sim N(0, 1)$, and the $Var(z_t) = 1$. So in the second equation of the GARCH model, multiplying the $\sigma_t$ and the $\epsilon_t$ takes advantage of the properties of variance to get just what we wanted, conditional variance of $r^{SPY}_t$ that will be big when recent volatility is big and small when recent volatility is small. That last part follows because of how the $\sigma^2_t$ is consructed in the third line of the GARCH model, $\sigma_t^2 =\omega + \alpha_1\sigma_{t-1}^2 + \beta_1\varepsilon_{t-1}^2$. 
+
+
+# Estimating a GARCH Model
+
+The code below uses the rugarch R package to estimate a GARCH(p = 1, q = 1) model. Note that the p and q denote the number of lags on the $\sigma^2_t$ and $\epsilon^2_t$ terms, respectively. 
+
+The first command asks it to specify a plain vanilla GARCH by `model = "sGARCH"`. It asks it to use an ARMA(1, 1) for the returns model by `armaOrder = c(1, 1), include.mean = TRUE`. We ask it to use the $\mathcal{N}(0, 1)$ distribution for the $z_t$'s with the `distribution.model = "norm"`. The second command asks it to fit the model. The output is printed below the code.  
+
+The main model output is displayed under 'Optimal Parameters'. The `mu`, `ar1` and `ma1` coefficients are from the mean model (ARMA(1, 1)). and the `omega`, `alpha1`, and `beta1` are coefficient estimates from the $\sigma_t^2 =\omega + \alpha_1\sigma_{t-1}^2 + \beta_1\varepsilon_{t-1}^2$ equation of the main GARCH model. Under 'Robust Standard Errors' are the same coefficient estimates, but the standard errors are widened to account for the possibility that our distributional assumption is wrong. Notice that the estimates are about the same, but the p-values are all bigger, and in the case of `alpha1` it becomes no longer statistically significant with the robust standard errors. 
 
 
 ```{r}
 library(rugarch)
 
 garch11        <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1, 1)), 
-                            mean.model = list(armaOrder = c(1, 1), include.mean = FALSE), 
-                            distribution.model = "std")
+                            mean.model = list(armaOrder = c(1, 1), include.mean = TRUE), 
+                            distribution.model = "norm")
 
 garchfit       <- ugarchfit(spec = garch11, data = SPYRet_xts["2007-02-01/"], solver = "hybrid")
 garchfit
 ```
+
+Now let's use the rugarch's standard functionality to use this estimated model to produce rolling forecasts of $\sigma_t$ and plot them versus $\left| r^{SPY}_t \right|$. 
 
 ```{r}
 spec           <- getspec(garchfit)
@@ -117,7 +155,11 @@ garchforecast1 <- ugarchforecast(spec, n.ahead = 1, n.roll = 2499, data = SPYRet
 plot(garchforecast1, which = 4)
 ```
 
+It looks like to me this model does a pretty good job of sensing how long a volatility spike will remain elevated, or rather modeling the path of a volatility spike back down to long-run mean levels. Since all econometric models use past values to predict current values, it cannot foresee the initial spike up in volatility. 
 
+# That's It!
+
+Now you know the GARCH model for forecasting volatility. In the next post we will cover the multi-equation models, VAR and VECM, that are good for estimating the relationship among many variables. 
 
 
 
