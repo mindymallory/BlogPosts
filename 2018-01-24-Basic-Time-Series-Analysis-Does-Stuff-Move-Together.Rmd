@@ -78,6 +78,8 @@ library(stargazer)
 
 var <- VAR(time_series[2:dim(time_series)[1],], p = 2, type = "const", )
 stargazer(var$varresult$SPY, var$varresult$GS, type = 'html', dep.var.labels = c("Equation 1-SPY  Equation 2-GS"))
+
+causality(var, boot = TRUE, boot.runs = 100)
 ```
 
 
