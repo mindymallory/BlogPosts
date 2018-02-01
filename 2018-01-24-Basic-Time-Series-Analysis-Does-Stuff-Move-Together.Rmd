@@ -1,5 +1,5 @@
 ---
-title: "Basic Time-Series Analysis: Does Stuff Move Together (VAR & VECM)?"
+title: "Basic Time-Series Analysis: Does this Cause That, or Do They Move Together (VAR & VECM, and Granger Causality)?"
 output:
   html_document:
     keep_md: true
@@ -15,30 +15,33 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = TRU
 
 In this post I hope to explain how one goes about estimating the relationship among several variables over time. This approach has natural applications in agricultural economics and finance. In ag econ there are commodities whose prices are inherently related because of substitution or complementary effects in production and/or consumption (e.g., corn and soybeans), or because of production processes (e.g., soybeans, soybean oil, and soybean meal). In finance, security prices for companies in a similar sector might be related because of common economic conditions driving profitability (e.g., Bank of America and J.P. Morgan Chase). 
 
+
+
 In time-series analysis, there are two basic models typically used to estimate and evaluate the relationships between multiple variables over time.
 
 + Vector Auto-regression (VAR)
 + Vector Error Correction (VECM)
 
-We will start with the Vector Auto-regression model, because it is the simpler one. Also for simplicity, we will continue as in the first post using SPY (the S&P 500 exchange traded fund) and GS (Goldman Sachs) prices.[^whycomm]
-
-[^whycomm]: If you are wondering why an ag economist like me isn't using commodity prices for my examples, it's because I want to use prices that can be 'pulled' from a data vendor like Yahoo Finance quickly and for free (so spot prices are out), and I don't yet want to introduce the complication of how to create a series of 'nearby' futures contract prices. 
+We will start with the Vector Auto-regression model, because it is the simpler one. Also for simplicity, we will continue as in the first post using SPY (the S&P 500 exchange traded fund) and GS (Goldman Sachs) prices. 
 
 ```{r}
 
 # If you are following along, uncomment the next lines and run once to install the required packages 
 # install.packages('ggplot2')
 # install.packages('xts')
-# install.packages("stargazer")
 # install.packages('quantmod')
 # install.packages('broom')
 # install.packages('tseries')
 # install.packages("kableExtra")
 # install.packages("knitr")
+# install.packages("vars")
 
 library(quantmod)
-getSymbols(c('SPY', 'GS', 'SHY'))
-
+getSymbols(c('SPY', 'GS'))
+SPYRet                <- log(SPY$SPY.Adjusted) - log(lag(SPY$SPY.Adjusted))
+GSRet                 <- log(GS$GS.Adjusted) - log(lag(GS$GS.Adjusted))
+time_series           <- cbind(SPYRet, GSRet)
+colnames(time_series) <- c('SPY', 'GS') 
 ```
 
 
@@ -55,21 +58,27 @@ It consists of two linear regression equations, the first explaining the SPY pri
 
 ## Levels or Returns?
 
-If you read my first post in the series you should be wondering why in the world it is OK to put the SPY and GS prices into the VAR in levels. After all, we found strong evidence that both are non-stationary. This is true, the VAR model written above would have all the problems of a spurious regression we discussed in the first post. To remedy the situation, we can write the VAR using returns instead of price levels. 
+If you read my first post in the series you should be wondering why in the world it is OK to put the SPY and GS prices into the VAR in levels. After all, we found strong evidence that both are non-stationary. This is true, the VAR model written above would have all the problems of a spurious regression we discussed in the first post. Writing the VAR using returns instead of price levels will usually remedy the situation, as noted in the first [post](http://blog.mindymallory.com/2018/01/basic-time-series-analysis-the-game/). 
 
 
-Then, the VAR in returns (using the first notation) is
+Then, a VAR(2) using price returns (using the $\Delta$ notation to indicate $\Delta SPY_t = log(SPY_t) - log(SPY_{t-1})$) is
 
 \begin{align}
 \Delta SPY_t &= \beta^{spy}_0 + \beta^{spy}_1 \Delta SPY_{t-1} + \beta^{spy}_2 \Delta SPY_{t-2} + \beta^{spy}_3 \Delta GS_{t-1} + \beta^{spy}_4 \Delta GS_{t-2} + \epsilon_{spy} \\
 \Delta GS_t  &= \beta^{gs}_0  + \beta^{gs}_1 \Delta SPY_{t-1}  + \beta^{gs}_2 \Delta SPY_{t-2}  + \beta^{gs}_3 \Delta GS_{t-1}  + \beta^{gs}_4 \Delta GS_{t-2}  + \epsilon_{gs} 
 \end{align}
 
-Another thing that you sometimes see is the inclusion of 'exogenous' variables. That is exogenous as opposed to endogenous. In this context, both SPY and GS are endogenous because they get to be on the left hand side of an equation. They are being determined by lags of the variables. Sometimes you want to include an 'exogenous' variable that might be affecting the endogenous variables, but you don't want to give it it's own equation for whatever reason. Let's consider SHY, a 1-3 year treasury bond etf to be an exogenous variable. All that means in the context of a VAR model is that you put lags of the SHY on the right hand side, but SHY doesn't get it's own equation. 
+## What is it Used for?
 
+The VAR model is used to determine the relationship among several variables. Most commonly, one would test for what is called [Granger Causality]()
 
+```{r, results = "asis"}
+library(vars)
+library(stargazer)
 
-
+var <- VAR(time_series[2:dim(time_series)[1],], p = 2, type = "const", )
+stargazer(var$varresult$SPY, var$varresult$GS, type = 'html', dep.var.labels = c("Equation 1-SPY  Equation 2-GS"))
+```
 
 
 
