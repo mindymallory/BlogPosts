@@ -68,9 +68,9 @@ Then, a VAR(2) using price returns (using the $\Delta$ notation to indicate $\De
 \Delta GS_t  &= \beta^{gs}_0  + \beta^{gs}_1 \Delta SPY_{t-1}  + \beta^{gs}_2 \Delta SPY_{t-2}  + \beta^{gs}_3 \Delta GS_{t-1}  + \beta^{gs}_4 \Delta GS_{t-2}  + \epsilon_{gs} 
 \end{align}
 
-## What is it Used for?
+Fitting a VAR with two lags to SPY and GS returns yeilds the following. 
 
-The VAR model is used to determine the relationship among several variables. Most commonly, one would test for what is called [Granger Causality]()
+## VAR(2) on SPY and GS Returns
 
 ```{r, results = "asis"}
 library(vars)
@@ -78,9 +78,62 @@ library(stargazer)
 
 var <- VAR(time_series[2:dim(time_series)[1],], p = 2, type = "const", )
 stargazer(var$varresult$SPY, var$varresult$GS, type = 'html', dep.var.labels = c("Equation 1-SPY  Equation 2-GS"))
-
-causality(var, boot = TRUE, boot.runs = 100)
 ```
+
+
+In the SPY returns equation (1), the first lag of GS returns and the second lag of SPY returns are statistically significant. Also, in the GS returns equation (2), the first and second lag of SPY returns are statistically significant, and the first lag of GS returns is statistically significant.
+
+
+## What is it Used for?
+
+The VAR model is used to determine the relationship among several variables. In practice this most often means estimating a subset of the following three things: Granger Causality, Implulse Response Functions, and Forecast Error Variance Decomposition. 
+
+[Granger Causality](http://www.scholarpedia.org/article/Granger_causality) is most commonly implemented by an F-test on the lags of the other variable on the variables of interest. Stated more simply in our context, it tests whether lags of SPY returns are helpful in forecasting GS returns, and vice versa. Impulse response functions show how one varaible might react to sudden changes in the other variable. Finally, forecast error variance decomposition (FEVD) estimates how much of your forecast error can be attributed to unpredictability in each variable in the VAR. 
+
+We will look more closely at each in what follows. 
+
+## Granger Causality
+
+Granger Causality is a different kind of causality than one typically runs into in cross-section econometrics, where you might have some kind of natural experiment. Perhaps an unpredictable policy change gave a random subset of people more access to credit. An econometrician might then come along and test if greater access to credit leads to X, Y, or Z - like college enrollment, or mechanization on small-holder farms, depending on the context. In that case, the econometrician will try to convice you whether or not access to credit really *caused* the change in outcome. Then, once causality has been established (or not), policy prescriptions might be suggested, perhaps to encourage (or not) the provision of credit). 
+
+In time-series econometrics, we can seldom even hope to show 'real' causality. We settle for Granger causality. Are these things correlated enough that one is useful in forecasting the other? If so Granger Causality can be established. 
+
+
+
+```{r, results = 'asis'}
+library(broom)
+library(knitr)
+library(kableExtra)
+causeSPY_noboot <- causality(var, cause = 'SPY', boot = FALSE, boot.runs = 100)$Granger %>% tidy()
+causeSPY_boot   <- causality(var, cause = 'SPY', boot = TRUE, boot.runs = 100)$Granger %>% tidy()
+causeGS_noboot  <- causality(var, cause = 'GS', boot = FALSE, boot.runs = 100)$Granger %>% tidy()
+causeGS_boot    <- causality(var, cause = 'GS', boot = TRUE, boot.runs = 100)$Granger %>% tidy()
+
+causeSPY_noboot$parameter <- NA
+causeGS_noboot$parameter  <- NA
+causeSPY_boot$df1         <- NA
+causeSPY_boot$df2         <- NA
+causeGS_boot$df1         <- NA
+causeGS_boot$df2         <- NA
+
+
+resultstable   <- rbind(causeGS_noboot[, c(1, 2, 6, 3, 4, 5)], causeSPY_noboot[, c(1, 2, 6, 3, 4, 5)], causeGS_boot[, c(5, 6, 3, 1, 2, 4)], causeSPY_boot[, c(5, 6, 3, 1, 2, 4)])
+
+resultstable$Bootstrap    <- c('No Bootstrap', '', 'Bootstrap', '')
+resultstable   <- resultstable[, c(7, 1, 2, 3, 4, 5, 6)]
+
+colnames(resultstable)    <- c('Bootstrap', 'df1', 'df2', '#Bootstraps', 'Stat', 'P-Value', 'Equation')
+  
+resultstable %>% 
+  kable("html") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+
+```
+
+
+
 
 
 

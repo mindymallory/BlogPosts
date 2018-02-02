@@ -161,10 +161,10 @@ GS_t  &amp;= \beta^{gs}_0  + \beta^{gs}_1SPY_{t-1}  + \beta^{gs}_2SPY_{t-2}  + \
 \Delta SPY_t &amp;= \beta^{spy}_0 + \beta^{spy}_1 \Delta SPY_{t-1} + \beta^{spy}_2 \Delta SPY_{t-2} + \beta^{spy}_3 \Delta GS_{t-1} + \beta^{spy}_4 \Delta GS_{t-2} + \epsilon_{spy} \\
 \Delta GS_t  &amp;= \beta^{gs}_0  + \beta^{gs}_1 \Delta SPY_{t-1}  + \beta^{gs}_2 \Delta SPY_{t-2}  + \beta^{gs}_3 \Delta GS_{t-1}  + \beta^{gs}_4 \Delta GS_{t-2}  + \epsilon_{gs} 
 \end{align}\]</span>
+<p>Fitting a VAR with two lags to SPY and GS returns yeilds the following.</p>
 </div>
-<div id="what-is-it-used-for" class="section level2">
-<h2>What is it Used for?</h2>
-<p>The VAR model is used to determine the relationship among several variables. Most commonly, one would test for what is called <a href>Granger Causality</a></p>
+<div id="var2-on-spy-and-gs-returns" class="section level2">
+<h2>VAR(2) on SPY and GS Returns</h2>
 <pre class="r"><code>library(vars)
 library(stargazer)
 
@@ -425,6 +425,163 @@ F Statistic (df = 4; 2782)
 <sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05; <sup></strong></em></sup>p&lt;0.01
 </td>
 </tr>
+</table>
+<p>In the SPY returns equation (1), the first lag of GS returns and the second lag of SPY returns are statistically significant. Also, in the GS returns equation (2), the first and second lag of SPY returns are statistically significant, and the first lag of GS returns is statistically significant.</p>
+</div>
+<div id="what-is-it-used-for" class="section level2">
+<h2>What is it Used for?</h2>
+<p>The VAR model is used to determine the relationship among several variables. In practice this most often means estimating a subset of the following three things: Granger Causality, Implulse Response Functions, and Forecast Error Variance Decomposition.</p>
+<p><a href="http://www.scholarpedia.org/article/Granger_causality">Granger Causality</a> is most commonly implemented by an F-test on the lags of the other variable on the variables of interest. Stated more simply in our context, it tests whether lags of SPY returns are helpful in forecasting GS returns, and vice versa. Impulse response functions show how one varaible might react to sudden changes in the other variable. Finally, forecast error variance decomposition (FEVD) estimates how much of your forecast error can be attributed to unpredictability in each variable in the VAR.</p>
+<p>We will look more closely at each in what follows.</p>
+</div>
+<div id="granger-causality" class="section level2">
+<h2>Granger Causality</h2>
+<p>Granger Causality is a different kind of causality than one typically runs into in cross-section econometrics, where you might have some kind of natural experiment. Perhaps an unpredictable policy change gave a random subset of people more access to credit. An econometrician might then come along and test if greater access to credit leads to X, Y, or Z - like college enrollment, or mechanization on small-holder farms, depending on the context. In that case, the econometrician will try to convice you whether or not access to credit really <em>caused</em> the change in outcome. Then, once causality has been established (or not), policy prescriptions might be suggested, perhaps to encourage (or not) the provision of credit).</p>
+<p>In time-series econometrics, we can seldom even hope to show ‘real’ causality. We settle for Granger causality. Are these things correlated enough that one is useful in forecasting the other? If so Granger Causality can be established.</p>
+<pre class="r"><code>library(broom)
+library(knitr)
+library(kableExtra)
+causeSPY_noboot &lt;- causality(var, cause = 'SPY', boot = FALSE, boot.runs = 100)$Granger %&gt;% tidy()
+causeSPY_boot   &lt;- causality(var, cause = 'SPY', boot = TRUE, boot.runs = 100)$Granger %&gt;% tidy()
+causeGS_noboot  &lt;- causality(var, cause = 'GS', boot = FALSE, boot.runs = 100)$Granger %&gt;% tidy()
+causeGS_boot    &lt;- causality(var, cause = 'GS', boot = TRUE, boot.runs = 100)$Granger %&gt;% tidy()
+
+causeSPY_noboot$parameter &lt;- NA
+causeGS_noboot$parameter  &lt;- NA
+causeSPY_boot$df1         &lt;- NA
+causeSPY_boot$df2         &lt;- NA
+causeGS_boot$df1         &lt;- NA
+causeGS_boot$df2         &lt;- NA
+
+
+resultstable   &lt;- rbind(causeGS_noboot[, c(1, 2, 6, 3, 4, 5)], causeSPY_noboot[, c(1, 2, 6, 3, 4, 5)], causeGS_boot[, c(5, 6, 3, 1, 2, 4)], causeSPY_boot[, c(5, 6, 3, 1, 2, 4)])
+
+resultstable$Bootstrap    &lt;- c('No Bootstrap', '', 'Bootstrap', '')
+resultstable   &lt;- resultstable[, c(7, 1, 2, 3, 4, 5, 6)]
+
+colnames(resultstable)    &lt;- c('Bootstrap', 'df1', 'df2', '#Bootstraps', 'Stat', 'P-Value', 'Equation')
+  
+resultstable %&gt;% 
+  kable(&quot;html&quot;) %&gt;% 
+  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;))</code></pre>
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Bootstrap
+</th>
+<th style="text-align:right;">
+df1
+</th>
+<th style="text-align:right;">
+df2
+</th>
+<th style="text-align:right;">
+#Bootstraps
+</th>
+<th style="text-align:right;">
+Stat
+</th>
+<th style="text-align:right;">
+P-Value
+</th>
+<th style="text-align:left;">
+Equation
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+No Bootstrap
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+5564
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+10.60502
+</td>
+<td style="text-align:right;">
+2.53e-05
+</td>
+<td style="text-align:left;">
+Granger causality H0: GS do not Granger-cause SPY
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+5564
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+11.65211
+</td>
+<td style="text-align:right;">
+8.90e-06
+</td>
+<td style="text-align:left;">
+Granger causality H0: SPY do not Granger-cause GS
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bootstrap
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:right;">
+10.60502
+</td>
+<td style="text-align:right;">
+1.40e-01
+</td>
+<td style="text-align:left;">
+Granger causality H0: GS do not Granger-cause SPY
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:right;">
+11.65211
+</td>
+<td style="text-align:right;">
+9.00e-02
+</td>
+<td style="text-align:left;">
+Granger causality H0: SPY do not Granger-cause GS
+</td>
+</tr>
+</tbody>
 </table>
 </div>
 </div>
