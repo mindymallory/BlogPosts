@@ -1,5 +1,5 @@
 ---
-title: "Basic Time-Series Analysis: Does this Cause That, or Do They Move Together (VAR & VECM, and Granger Causality)?"
+title: "Basic Time-Series Analysis: Does this Cause That (VAR)?"
 output:
   html_document:
     keep_md: true
@@ -132,6 +132,24 @@ resultstable %>%
 
 ```
 
+
+## Forecast Error Variance Decomposition
+
+```{r}
+FEVD <- fevd(var, n.ahead = 5)
+plot(FEVD)
+```
+
+
+## Impulse Response Function
+
+```{r}
+IRF <- irf(var, impulse = 'SPY', response = 'GS',  n.ahead = 5, boot = TRUE, runs = 100, ci = 0.95)
+plot(IRF)
+
+IRF <- irf(var, impulse = 'GS', response = 'SPY',  n.ahead = 5, boot = TRUE, runs = 100, ci = 0.95)
+plot(IRF)
+```
 
 
 

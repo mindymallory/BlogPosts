@@ -211,6 +211,34 @@ resultstable %>%
 </table>
 
 
+## Forecast Error Variance Decomposition
+
+
+```r
+FEVD <- fevd(var, n.ahead = 5)
+plot(FEVD)
+```
+
+![](2018-01-24-Basic-Time-Series-Analysis-Does-Stuff-Move-Together_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+
+## Impulse Response Function
+
+
+```r
+IRF <- irf(var, impulse = 'SPY', response = 'GS',  n.ahead = 5, boot = TRUE, runs = 100, ci = 0.95)
+plot(IRF)
+```
+
+![](2018-01-24-Basic-Time-Series-Analysis-Does-Stuff-Move-Together_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+```r
+IRF <- irf(var, impulse = 'GS', response = 'SPY',  n.ahead = 5, boot = TRUE, runs = 100, ci = 0.95)
+plot(IRF)
+```
+
+![](2018-01-24-Basic-Time-Series-Analysis-Does-Stuff-Move-Together_files/figure-html/unnamed-chunk-6-2.png)<!-- -->
+
 
 
 
