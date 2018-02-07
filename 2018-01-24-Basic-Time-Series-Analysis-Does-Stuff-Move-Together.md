@@ -85,26 +85,26 @@ stargazer(var$varresult$SPY, var$varresult$GS, type = 'html', dep.var.labels = c
 <tr><td></td><td colspan="2" style="border-bottom: 1px solid black"></td></tr>
 <tr><td style="text-align:left"></td><td colspan="2">Equation 1-SPY Equation 2-GS</td></tr>
 <tr><td style="text-align:left"></td><td>(1)</td><td>(2)</td></tr>
-<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">SPY.l1</td><td>0.003</td><td>0.216<sup>***</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.028)</td><td>(0.055)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">GS.l1</td><td>-0.063<sup>***</sup></td><td>-0.127<sup>***</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.014)</td><td>(0.028)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">SPY.l2</td><td>-0.098<sup>***</sup></td><td>-0.135<sup>**</sup></td></tr>
+<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">SPY.l1</td><td>0.003</td><td>0.212<sup>***</sup></td></tr>
 <tr><td style="text-align:left"></td><td>(0.028)</td><td>(0.054)</td></tr>
 <tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">GS.l2</td><td>0.018</td><td>0.036</td></tr>
+<tr><td style="text-align:left">GS.l1</td><td>-0.062<sup>***</sup></td><td>-0.127<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.014)</td><td>(0.028)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">SPY.l2</td><td>-0.097<sup>***</sup></td><td>-0.135<sup>**</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.028)</td><td>(0.054)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">GS.l2</td><td>0.017</td><td>0.034</td></tr>
 <tr><td style="text-align:left"></td><td>(0.014)</td><td>(0.028)</td></tr>
 <tr><td style="text-align:left"></td><td></td><td></td></tr>
 <tr><td style="text-align:left">const</td><td>0.0004</td><td>0.0001</td></tr>
 <tr><td style="text-align:left"></td><td>(0.0002)</td><td>(0.0005)</td></tr>
 <tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>2,787</td><td>2,787</td></tr>
+<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>2,791</td><td>2,791</td></tr>
 <tr><td style="text-align:left">R<sup>2</sup></td><td>0.021</td><td>0.011</td></tr>
-<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.020</td><td>0.010</td></tr>
-<tr><td style="text-align:left">Residual Std. Error (df = 2782)</td><td>0.012</td><td>0.024</td></tr>
-<tr><td style="text-align:left">F Statistic (df = 4; 2782)</td><td>14.895<sup>***</sup></td><td>7.955<sup>***</sup></td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.019</td><td>0.010</td></tr>
+<tr><td style="text-align:left">Residual Std. Error (df = 2786)</td><td>0.012</td><td>0.024</td></tr>
+<tr><td style="text-align:left">F Statistic (df = 4; 2786)</td><td>14.643<sup>***</sup></td><td>7.909<sup>***</sup></td></tr>
 <tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td colspan="2" style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
 </table>
 
@@ -178,19 +178,19 @@ resultstable %>%
   <tr>
    <td style="text-align:left;"> No Bootstrap </td>
    <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 5564 </td>
+   <td style="text-align:right;"> 5572 </td>
    <td style="text-align:right;"> NA </td>
-   <td style="text-align:right;"> 10.60502 </td>
-   <td style="text-align:right;"> 2.53e-05 </td>
+   <td style="text-align:right;"> 10.22703 </td>
+   <td style="text-align:right;"> 3.69e-05 </td>
    <td style="text-align:left;"> Granger causality H0: GS do not Granger-cause SPY </td>
   </tr>
   <tr>
    <td style="text-align:left;">  </td>
    <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 5564 </td>
+   <td style="text-align:right;"> 5572 </td>
    <td style="text-align:right;"> NA </td>
-   <td style="text-align:right;"> 11.65211 </td>
-   <td style="text-align:right;"> 8.90e-06 </td>
+   <td style="text-align:right;"> 11.43787 </td>
+   <td style="text-align:right;"> 1.10e-05 </td>
    <td style="text-align:left;"> Granger causality H0: SPY do not Granger-cause GS </td>
   </tr>
   <tr>
@@ -198,8 +198,8 @@ resultstable %>%
    <td style="text-align:right;"> NA </td>
    <td style="text-align:right;"> NA </td>
    <td style="text-align:right;"> 5000 </td>
-   <td style="text-align:right;"> 10.60502 </td>
-   <td style="text-align:right;"> 6.86e-02 </td>
+   <td style="text-align:right;"> 10.22703 </td>
+   <td style="text-align:right;"> 7.04e-02 </td>
    <td style="text-align:left;"> Granger causality H0: GS do not Granger-cause SPY </td>
   </tr>
   <tr>
@@ -207,8 +207,8 @@ resultstable %>%
    <td style="text-align:right;"> NA </td>
    <td style="text-align:right;"> NA </td>
    <td style="text-align:right;"> 5000 </td>
-   <td style="text-align:right;"> 11.65211 </td>
-   <td style="text-align:right;"> 7.22e-02 </td>
+   <td style="text-align:right;"> 11.43787 </td>
+   <td style="text-align:right;"> 8.36e-02 </td>
    <td style="text-align:left;"> Granger causality H0: SPY do not Granger-cause GS </td>
   </tr>
 </tbody>

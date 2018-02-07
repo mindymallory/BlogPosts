@@ -1,4 +1,4 @@
-# Basic Time-Series Analysis: The Cointegration and the VECM Model Explained
+# Basic Time-Series Analysis: A Drunk and Her Dog Explain Cointegration and the VECM Model
 
 
 
@@ -53,18 +53,22 @@ colnames(time_series) <- c('SPY', 'GS')
 
 # Vector Error Correction Model 
 
-A VECM model adds a single term to the VAR in returns model that we learned in the last post. It adds an $\alpha \beta SPY_{t-1}$ and $\alpha \beta GS_{t-1}$ term to each equation. Using SPY and GS prices, it looks like this.  
+A VECM model adds a single term to the VAR in returns model that we learned in the last post. It adds an $\alpha (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 GS_{t-1})$ term to each equation. Using SPY and GS prices, it looks like this.  
 
 \begin{align}
-\Delta SPY_t &= \gamma^{spy}_0 + \alpha_1 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1}) + \gamma^{spy}_1 \Delta SPY_{t-1} + \gamma^{spy}_2 \Delta SPY_{t-2} + \gamma^{spy}_3 \Delta GS_{t-1} + \gamma^{spy}_4 \Delta GS_{t-2} + \nu_{spy} \\
-\Delta GS_t  &= \gamma^{gs}_0  + \alpha_2 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1}) + \gamma^{gs}_1 \Delta SPY_{t-1}  + \gamma^{gs}_2 \Delta SPY_{t-2}  + \gamma^{gs}_3 \Delta GS_{t-1}  + \gamma^{gs}_4 \Delta GS_{t-2}  + \nu_{gs} 
+\Delta SPY_t &= \gamma^{spy}_0 + \alpha_1 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 GS_{t-1}) + \gamma^{spy}_1 \Delta SPY_{t-1} + \gamma^{spy}_2 \Delta SPY_{t-2} + \gamma^{spy}_3 \Delta GS_{t-1} + \gamma^{spy}_4 \Delta GS_{t-2} + \nu^{spy}_t \\
+\Delta GS_t  &= \gamma^{gs}_0  + \alpha_2 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 GS_{t-1}) + \gamma^{gs}_1 \Delta SPY_{t-1}  + \gamma^{gs}_2 \Delta SPY_{t-2}  + \gamma^{gs}_3 \Delta GS_{t-1}  + \gamma^{gs}_4 \Delta GS_{t-2}  + \nu^{gs}_t 
 \end{align}
 
-The $\gamma$'s are regression coeficients on the lagged SPY and GS returns, just like the $\beta$'s from our VAR blog post. The $\alpha_1 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1})$, and $\alpha_2 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1})$ terms are called error correction terms. 
+The $\gamma$'s are regression coeficients on the lagged SPY and GS returns, just like the $\beta$'s from our VAR blog post. The $\alpha_1 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 GS_{t-1})$, and $\alpha_2 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 GS_{t-1})$ terms are called error correction terms. 
 
 It's at about this point where you may start appreciating why people say you should take linear algebra if you want to do econometrics. This is really messy looking and it is hard to really understand what is going on, what the heck those error correction terms are, and how on earth they might be useful. 
 
-Rewriting this in matrix form makes it much neater and aid understanding. If you've had linear algebra, make sure you can reproduce this next step; it will help your understanding of the working parts. If you haven't yet had linear algebra, consider signing up next semester! and try to understand the explanation of what the $\alpha$'s and $\beta$'s are.  
+Rewriting this in matrix form makes it much neater and (I think) aids understanding. If you've had linear algebra, make sure you can reproduce this next step; it will help your understanding of the working parts. If you haven't yet had linear algebra, consider signing up next semester! and try to understand the explanation of what the $\alpha$'s and $\beta$'s are.  
+
+As an intermediate step, write the error correction terms as a 2X1 matrix with the $\alpha$'s in it times a 1X3 matrix with the $\beta$'s and a linar combination of the price levels it in. The rest of it, is just the terms from a VAR written in matrix form too. 
+
+
 
 \begin{align}
 \left[
@@ -87,14 +91,101 @@ Rewriting this in matrix form makes it much neater and aid understanding. If you
 
 \left[
 \begin{array}
-  s\alpha_1 & \alpha_2
+  s\alpha_1 \\ 
+  \alpha_2
 \end{array} 
 \right]
 
 \left[
 \begin{array}
-  s\beta_1 \\
-  \beta_2
+  s\beta_0 & \beta_1 SPY_{t-1} & \beta_2 GS_{t-1}
+\end{array} 
+\right]
+
+
+
++ 
+
+\left[
+\begin{array}
+  s\gamma^{spy}_1  & \gamma^{spy}_2  \\
+   \gamma^{gs}_1  & \gamma^{gs}_2  \\
+  
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  s\Delta SPY_{t-1} \\
+   \Delta GS_{t-1}
+\end{array} 
+\right]
+
++ 
+
+\left[
+\begin{array}
+  s \gamma^{spy}_3 & \gamma^{spy}_4 \\
+    \gamma^{gs}_3 & \gamma^{gs}_4\\
+  
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  s\Delta SPY_{t-2} \\
+   \Delta GS_{t-2}
+\end{array} 
+\right]
+
++ 
+
+\left[
+\begin{array}
+  s\nu^{spy}_t  \\
+  \nu^{gs}_t 
+\end{array} 
+\right]
+
+
+\end{align}
+
+Now, the $\beta_0 + \beta_1 SPY_{t-1} + \beta_2 GS_{t-1}$ is the long run, or equilibrium relationship of the variables. If we take a more intuitive example, like corn prices on the forward curve, we might expect that the long run relationship between the nearby (say the March futures contrac) and the first deferred (say the May futures contract) is something like $0 = 8 + P^{March}_{corn} - P^{May}_{corn}$. The we would have find that usually, the May price is about 8 cents above the March price, or $P^{May}_{corn} = 8 + P^{March}_{corn}$  and $\beta_0 = 8$, $\beta_1 = 1$, $\beta_2 = -1$.   
+
+So if we fit a VECM, the $\beta$'s tell us the equilibrium relationship that the two series like to maintain. But, this is a random process, so there will be periods of fairly large deviation from this relationship. How, exactly, will the two series respond so that the relationship starts getting pushed back in line with its long run equilibrium?
+
+
+
+
+\begin{align}
+\left[
+\begin{array}
+  SSPY_t \\
+ GS_t 
+\end{array} 
+\right]
+
+&= 
+
+\left[
+\begin{array}
+  s\gamma^{spy}_0 \\
+ \gamma^{gs}_0 
+\end{array} 
+\right]
+
++ 
+
+\left[
+\begin{array}
+  s\alpha_1 \\ 
+  \alpha_2
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  s\beta_0 & \beta_1 & \beta_2
 \end{array} 
 \right]
 
@@ -105,7 +196,54 @@ Rewriting this in matrix form makes it much neater and aid understanding. If you
 \end{array} 
 \right]
 
+
++ 
+
+\left[
+\begin{array}
+  s\gamma^{spy}_1  & \gamma^{spy}_2  \\
+   \gamma^{gs}_1  & \gamma^{gs}_2  \\
+  
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  s\Delta SPY_{t-1} \\
+   \Delta GS_{t-1}
+\end{array} 
+\right]
+
++ 
+
+\left[
+\begin{array}
+  s \gamma^{spy}_3 & \gamma^{spy}_4 \\
+    \gamma^{gs}_3 & \gamma^{gs}_4\\
+  
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  s\Delta SPY_{t-2} \\
+   \Delta GS_{t-2}
+\end{array} 
+\right]
+
++ 
+
+\left[
+\begin{array}
+  s\nu^{spy}_t  \\
+  \nu^{gs}_t 
+\end{array} 
+\right]
+
+
 \end{align}
+
+
 ## The Johansen Test for Cointegration
 
 
