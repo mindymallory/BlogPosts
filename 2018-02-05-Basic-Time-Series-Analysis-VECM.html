@@ -152,7 +152,7 @@ time_series           &lt;- cbind(SPY, GS)
 colnames(time_series) &lt;- c('SPY', 'GS') </code></pre>
 <div id="vector-error-correction-model" class="section level1">
 <h1>Vector Error Correction Model</h1>
-<p>A VECM model adds a single term to the VAR model that we learned in the last post. It adds an <span class="math inline">\(\alpha \beta SPY_{t-1}\)</span> term to each equation. Using SPY and GS prices, it looks like this.</p>
+<p>A VECM model adds a single term to the VAR in returns model that we learned in the last post. It adds an <span class="math inline">\(\alpha \beta SPY_{t-1}\)</span> and <span class="math inline">\(\alpha \beta GS_{t-1}\)</span> term to each equation. Using SPY and GS prices, it looks like this.</p>
 <span class="math display">\[\begin{align}
 \Delta SPY_t &amp;= \gamma^{spy}_0 + \alpha_1 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1}) + \gamma^{spy}_1 \Delta SPY_{t-1} + \gamma^{spy}_2 \Delta SPY_{t-2} + \gamma^{spy}_3 \Delta GS_{t-1} + \gamma^{spy}_4 \Delta GS_{t-2} + \nu_{spy} \\
 \Delta GS_t  &amp;= \gamma^{gs}_0  + \alpha_2 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1}) + \gamma^{gs}_1 \Delta SPY_{t-1}  + \gamma^{gs}_2 \Delta SPY_{t-2}  + \gamma^{gs}_3 \Delta GS_{t-1}  + \gamma^{gs}_4 \Delta GS_{t-2}  + \nu_{gs} 
@@ -160,6 +160,46 @@ colnames(time_series) &lt;- c('SPY', 'GS') </code></pre>
 <p>The <span class="math inline">\(\gamma\)</span>’s are regression coeficients on the lagged SPY and GS returns, just like the <span class="math inline">\(\beta\)</span>’s from our VAR blog post. The <span class="math inline">\(\alpha_1 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1})\)</span>, and <span class="math inline">\(\alpha_2 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1})\)</span> terms are called error correction terms.</p>
 <p>It’s at about this point where you may start appreciating why people say you should take linear algebra if you want to do econometrics. This is really messy looking and it is hard to really understand what is going on, what the heck those error correction terms are, and how on earth they might be useful.</p>
 <p>Rewriting this in matrix form makes it much neater and aid understanding. If you’ve had linear algebra, make sure you can reproduce this next step; it will help your understanding of the working parts. If you haven’t yet had linear algebra, consider signing up next semester! and try to understand the explanation of what the <span class="math inline">\(\alpha\)</span>’s and <span class="math inline">\(\beta\)</span>’s are.</p>
+<span class="math display">\[\begin{align}
+\left[
+\begin{array}
+  SSPY_t \\
+ GS_t 
+\end{array} 
+\right]
+
+&amp;= 
+
+\left[
+\begin{array}
+  s\gamma^{spy}_0 \\
+ \gamma^{gs}_0 
+\end{array} 
+\right]
+
++ 
+
+\left[
+\begin{array}
+  s\alpha_1 &amp; \alpha_2
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  s\beta_1 \\
+  \beta_2
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  sSPY_{t-1} \\
+  GS_{t-1}
+\end{array} 
+\right]
+
+\end{align}\]</span>
 <div id="the-johansen-test-for-cointegration" class="section level2">
 <h2>The Johansen Test for Cointegration</h2>
 </div>

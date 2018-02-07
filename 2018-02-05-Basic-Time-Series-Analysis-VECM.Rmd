@@ -54,7 +54,7 @@ colnames(time_series) <- c('SPY', 'GS')
 
 # Vector Error Correction Model 
 
-A VECM model adds a single term to the VAR model that we learned in the last post. It adds an $\alpha \beta SPY_{t-1}$ term to each equation. Using SPY and GS prices, it looks like this.  
+A VECM model adds a single term to the VAR in returns model that we learned in the last post. It adds an $\alpha \beta SPY_{t-1}$ and $\alpha \beta GS_{t-1}$ term to each equation. Using SPY and GS prices, it looks like this.  
 
 \begin{align}
 \Delta SPY_t &= \gamma^{spy}_0 + \alpha_1 (\beta_1 SPY_{t-1} + \beta_2 GS_{t-1}) + \gamma^{spy}_1 \Delta SPY_{t-1} + \gamma^{spy}_2 \Delta SPY_{t-2} + \gamma^{spy}_3 \Delta GS_{t-1} + \gamma^{spy}_4 \Delta GS_{t-2} + \nu_{spy} \\
@@ -67,6 +67,48 @@ It's at about this point where you may start appreciating why people say you sho
 
 Rewriting this in matrix form makes it much neater and aid understanding. If you've had linear algebra, make sure you can reproduce this next step; it will help your understanding of the working parts. If you haven't yet had linear algebra, consider signing up next semester! and try to understand the explanation of what the $\alpha$'s and $\beta$'s are.  
 
+check dimentions !!
+
+\begin{align}
+\left[
+\begin{array}
+  SSPY_t \\
+ GS_t 
+\end{array} 
+\right]
+
+&= 
+
+\left[
+\begin{array}
+  s\gamma^{spy}_0 \\
+ \gamma^{gs}_0 
+\end{array} 
+\right]
+
++ 
+
+\left[
+\begin{array}
+  s\alpha_1 & \alpha_2
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  s\beta_1 \\
+  \beta_2
+\end{array} 
+\right]
+
+\left[
+\begin{array}
+  sSPY_{t-1} \\
+  GS_{t-1}
+\end{array} 
+\right]
+
+\end{align}
 ## The Johansen Test for Cointegration
 
 
