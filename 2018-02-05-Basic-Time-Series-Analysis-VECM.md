@@ -382,13 +382,13 @@ summary(johansentest)
 
 Above is the output from the Johansen trace test for cointegration. There is also a similar test called the eigen test, which I won't cover in this post, but you interpret them the same way. They usually give the same conclusion, but not always. 
 
-Focus on the output that has r <= 1 and r <= 0. These are the rusults from the actual test. The r = 0 line is testing the hypothesis that the rank of the matrix equals zero (think testing if the matrix is '=' zero, i.e., the error correction term doesn't belong). Notice that the test statistic, 64.96, is quite a bit above the one percent critical value of 24.60. Hence we should reject the null hypothesis. 
+Focus on the output that has $r <= 1$ and $r <= 0$. These are the rusults from the actual test. The $r = 0$ line is testing the hypothesis that the rank of the matrix equals zero (think testing if the matrix is '=' zero, i.e., the error correction term doesn't belong). Notice that the test statistic, 64.96, is quite a bit above the one percent critical value of 24.60. Hence we should reject the null hypothesis. 
 
-Next we consider the hypothesis that r <= 1, (which now that we have rejected r = 0, the test is for r = 1 since rank of a matrix is an integer). In this case, the test statistic is 7.56, which is less than all but the 10% critical values. Hence we fail to reject the null hypothesis and conclude the rank = 1. 
+Next we consider the hypothesis that $r <= 1$, (which now that we have rejected $r = 0$, the test is for $r = 1$ since rank of a matrix is an integer). In this case, the test statistic is 7.56, which is less than all but the 10% critical values. Hence we fail to reject the null hypothesis and conclude the rank = 1. 
 
 This means that there is indeed one cointegrating relationship, and the VECM is appropriate. 
 
-What if we had rejected the r = 1 hypothesis? Then we would have to conclude the rank = 2. This would indicate the series are stationary after all. 
+What if we had rejected the $r = 1$ hypothesis? Then we would have to conclude the rank = 2. This would indicate the series are stationary after all. 
 
 ## Fit the VECM 
 
@@ -424,7 +424,7 @@ t
 
 In the 'Coefficients' output, the $\alpha$'s and $\gamma$'s are given. Specifically, $\alpha_1$, the coeficient on the error correction term in the SPY equation, is 1.319e-06, and $\alpha_2$ is 9.070e-06. The remaining are the $\gamma$'s, the coeficients on the lagged return variables. 
 
-The '$beta' output gives the error correction term. Here we have that $\beta_0$ is  16200.3089, $beta_1$ is 1, and $\beta_2$ is -193.8095.
+The '$beta' output gives the error correction term. Here we have that $\beta_0$ is  16200.3089, $\beta_1$ is 1, and $\beta_2$ is -193.8095.
 
 Notice that information is also present in the previous output. The $\alpha$'s are the first column of the 'loading matrix', and the $\beta$'s are the first column of the eigenvectors matrix. 
 
@@ -437,6 +437,7 @@ Finally, as we mentioned before, the $\alpha$'s tell you how fast the series ten
 ## Granger Causality on Cointegrated Series
 
 You can also do Granger causality analysis on cointegrated series, but be warned you should take care in how you execute it. See Dave Giles' excellent [post](http://davegiles.blogspot.com/2011/10/var-or-vecm-when-testing-for-granger.html) about it, and [this](https://datazen.info/toda-yamamoto-implementation-in-r/) post of how to implement the test in R. 
+
 
 # That's It! 
 

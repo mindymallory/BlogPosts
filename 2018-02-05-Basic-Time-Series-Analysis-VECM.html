@@ -449,10 +449,10 @@ summary(johansentest)</code></pre>
 ## SPY.d 1.319447e-06 -1.882505e-04 7.426777e-17
 ## SHY.d 9.069726e-06  3.262663e-06 7.646965e-18</code></pre>
 <p>Above is the output from the Johansen trace test for cointegration. There is also a similar test called the eigen test, which I won’t cover in this post, but you interpret them the same way. They usually give the same conclusion, but not always.</p>
-<p>Focus on the output that has r &lt;= 1 and r &lt;= 0. These are the rusults from the actual test. The r = 0 line is testing the hypothesis that the rank of the matrix equals zero (think testing if the matrix is ‘=’ zero, i.e., the error correction term doesn’t belong). Notice that the test statistic, 64.96, is quite a bit above the one percent critical value of 24.60. Hence we should reject the null hypothesis.</p>
-<p>Next we consider the hypothesis that r &lt;= 1, (which now that we have rejected r = 0, the test is for r = 1 since rank of a matrix is an integer). In this case, the test statistic is 7.56, which is less than all but the 10% critical values. Hence we fail to reject the null hypothesis and conclude the rank = 1.</p>
+<p>Focus on the output that has <span class="math inline">\(r &lt;= 1\)</span> and <span class="math inline">\(r &lt;= 0\)</span>. These are the rusults from the actual test. The <span class="math inline">\(r = 0\)</span> line is testing the hypothesis that the rank of the matrix equals zero (think testing if the matrix is ‘=’ zero, i.e., the error correction term doesn’t belong). Notice that the test statistic, 64.96, is quite a bit above the one percent critical value of 24.60. Hence we should reject the null hypothesis.</p>
+<p>Next we consider the hypothesis that <span class="math inline">\(r &lt;= 1\)</span>, (which now that we have rejected <span class="math inline">\(r = 0\)</span>, the test is for <span class="math inline">\(r = 1\)</span> since rank of a matrix is an integer). In this case, the test statistic is 7.56, which is less than all but the 10% critical values. Hence we fail to reject the null hypothesis and conclude the rank = 1.</p>
 <p>This means that there is indeed one cointegrating relationship, and the VECM is appropriate.</p>
-<p>What if we had rejected the r = 1 hypothesis? Then we would have to conclude the rank = 2. This would indicate the series are stationary after all.</p>
+<p>What if we had rejected the <span class="math inline">\(r = 1\)</span> hypothesis? Then we would have to conclude the rank = 2. This would indicate the series are stationary after all.</p>
 </div>
 <div id="fit-the-vecm" class="section level2">
 <h2>Fit the VECM</h2>
@@ -479,7 +479,7 @@ t</code></pre>
 ## SHY.l3    -193.8095
 ## constant 16200.3089</code></pre>
 <p>In the ‘Coefficients’ output, the <span class="math inline">\(\alpha\)</span>’s and <span class="math inline">\(\gamma\)</span>’s are given. Specifically, <span class="math inline">\(\alpha_1\)</span>, the coeficient on the error correction term in the SPY equation, is 1.319e-06, and <span class="math inline">\(\alpha_2\)</span> is 9.070e-06. The remaining are the <span class="math inline">\(\gamma\)</span>’s, the coeficients on the lagged return variables.</p>
-<p>The ‘$beta’ output gives the error correction term. Here we have that <span class="math inline">\(\beta_0\)</span> is 16200.3089, <span class="math inline">\(beta_1\)</span> is 1, and <span class="math inline">\(\beta_2\)</span> is -193.8095.</p>
+<p>The ‘$beta’ output gives the error correction term. Here we have that <span class="math inline">\(\beta_0\)</span> is 16200.3089, <span class="math inline">\(\beta_1\)</span> is 1, and <span class="math inline">\(\beta_2\)</span> is -193.8095.</p>
 <p>Notice that information is also present in the previous output. The <span class="math inline">\(\alpha\)</span>’s are the first column of the ‘loading matrix’, and the <span class="math inline">\(\beta\)</span>’s are the first column of the eigenvectors matrix.</p>
 </div>
 <div id="what-does-this-tell-you" class="section level2">

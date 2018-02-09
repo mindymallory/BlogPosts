@@ -383,40 +383,6 @@ Finally, as we mentioned before, the $\alpha$'s tell you how fast the series ten
 
 You can also do Granger causality analysis on cointegrated series, but be warned you should take care in how you execute it. See Dave Giles' excellent [post](http://davegiles.blogspot.com/2011/10/var-or-vecm-when-testing-for-granger.html) about it, and [this](https://datazen.info/toda-yamamoto-implementation-in-r/) post of how to implement the test in R. 
 
-## Forecasting with a VECM Model
-
-```{r}
-library(vars)
-library(forecast)
-library(sweep)
-library(ggplot2)
-library(broom)
-library(tibble)
-var_rep         <- vec2var(johansentest)
-forecasts       <- predict(var_rep, n.ahead= 5)
-dates           <- c(index(SPY)[length(SPY)] + 1, index(SPY)[length(SPY)] + 2, index(SPY)[length(SPY)] + 3,           index(SPY)[length(SPY)] + 4, index(SPY)[length(SPY)] + 5)
-
-
-
-forecasts1 <- cbind(forecasts$fcst$SPY, forecasts$fcst$SHY) %>% 
-               tidy() %>% add_column(dates)
-
-time_series <- tidy(time_series)
-
-    ggplot(time_series , aes(x = index, y = value, color = series)) + geom_line() +
-    # Prediction intervals
-   # geom_ribbon(data = forecasts1, aes(x = dates, ymin = lower, ymax = upper), 
-   #             fill = "#D5DBFF", color = NA, size = 0) +
-    # Actual & Forecast
-    geom_line(forecasts1, aes(x = dates, y = fcst, size = 1)) + 
-    #geom_point(size = 2) +
-    # Aesthetics
-    theme_bw() +
-    scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
-    labs(title = "SPY 5 Day Ahead ARIMA Price Forecast", x = "", y = "") 
-
-```
-
 
 # That's It! 
 
