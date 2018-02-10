@@ -19,10 +19,8 @@ We will go through specific examples of statistical tests for cointegration and 
 
 + Johansen Cointegration Tests
 + Fitting and Interpreting a VECM Model
-+ Granger Causality of Cointegrated Series
-+ 
 
-We will continue our examples using SPY (the S&P 500 exchange traded fund) and SHY (Goldman Sachs) prices. 
+In this example we will use SPY (the S&P 500 exchange traded fund) and SHY (iShares 1-3 year Treasury Bond) prices. We don't use Goldman Sachs prices in this example (in contrast to the previous posts in this series) because it turns out SPY and GS are not cointegrated, so I found a different example that is.  
 
 
 ```r
@@ -54,20 +52,26 @@ colnames(time_series) <- c('SPY', 'SHY')
 
 # Vector Error Correction Model 
 
-A VECM model adds a single term to the VAR in returns model that we learned in the last post. It adds an $\alpha (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})$ term to each equation. Using SPY and SHY prices, it looks like this.  
+A VECM model adds a single term to the VAR model we learned in the last post. It adds an $\alpha_i (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})$ term to each equation. It looks like this.  
 
 \begin{align}
 \Delta SPY_t &= \gamma^{spy}_0 + \alpha_1 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}) + \gamma^{spy}_1 \Delta SPY_{t-1} + \gamma^{spy}_2 \Delta SPY_{t-2} + \gamma^{spy}_3 \Delta SHY_{t-1} + \gamma^{spy}_4 \Delta SHY_{t-2} + \nu^{spy}_t \\
 \Delta SHY_t  &= \gamma^{SHY}_0  + \alpha_2 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}) + \gamma^{SHY}_1 \Delta SPY_{t-1}  + \gamma^{SHY}_2 \Delta SPY_{t-2}  + \gamma^{SHY}_3 \Delta SHY_{t-1}  + \gamma^{SHY}_4 \Delta SHY_{t-2}  + \nu^{SHY}_t 
 \end{align}
 
-The $\gamma$'s are regression coeficients on the lagged SPY and SHY returns, just like the $\beta$'s from our VAR blog post. The $\alpha_1 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})$, and $\alpha_2 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})$ terms are called error correction terms. 
+The $\gamma$'s are regression coeficients on the lagged SPY and SHY returns, just like the $\beta$'s from our VAR blog post. The $\alpha_1 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})$, and $\alpha_2 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})$ terms are new; they are called error correction terms. 
 
-It's at about this point where you may start appreciating why people say you should take linear algebra if you want to do econometrics. This is really messy looking and it is hard to really understand what is going on, what the heck those error correction terms are, and how on earth they might be useful. 
+Now, the $\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}$ is the long run, or equilibrium relationship of the variables. Suppose we fit this VECM model and get estimates of the $\beta$s of $\beta_0 = 0.50$, $\beta_1 = 1$, $\beta_2 = -1$. That means we estimated the long run relationship between the two price series to be $0 = 0.50 + SPY_{t-1} - SHY_{t-1}$, or in other words $SHY_{t-1} = 0.50 + SPY_{t-1}$. 
+
+So if we fit a VECM, the $\beta$'s tell us the equilibrium relationship that the two series like to maintain. This is a random process, though, so there will be periods of fairly large deviation from this relationship. How, exactly, will the two series respond so that the relationship starts getting pushed back in line with its long run equilibrium?
+
+This is governed by the $\alpha$s. Suppose that $SPY$ gets too big relative to $SHY$ so that the long run equlibrium is violated and $0.50 + SPY_{t-1} - SHY_{t-1}>0$. Then to make the series come back into long run equlibrim, $SPY$ needs to go down relative to $SHY$ and $SHY$ needs to go up relative to $SPY$. This means $\alpha_1$ should be negative and $\alpha_2$ should be positive, to push the two prices back together when they drift apart. The magnitude of the $\alpha$'s govern which one repsonds more strongly to disequilibrium and are sometimes called speed of adjustment parameters.
+
+It's at about this point where you have to start appreciating why people tell you to take linear algebra if you want to do econometrics. This is really messy looking and it is hard to really understand what is going on, what the heck those error correction terms are, and how on earth they might be useful. 
 
 Rewriting this in matrix form makes it much neater and (I think) aids understanding. If you've had linear algebra, make sure you can reproduce this next step; it will help your understanding of the working parts. If you haven't yet had linear algebra, consider signing up next semester! and try to understand the explanation of what the $\alpha$'s and $\beta$'s are.  
 
-As an intermediate step, write the error correction terms as a 2X1 matrix with the $\alpha$'s in it times a 1X3 matrix with the $\beta$'s and a linar combination of the price levels it in. The rest of it, is just the terms from a VAR written in matrix form too.[^more]
+As an intermediate step, write the error correction terms as a 2X1 vector with the $\alpha$'s in it times a 1X1 'vector' with the $\beta$'s and a linar combination of the price levels it in. The rest of it, is just the terms from a VAR written in matrix form too.[^more]
 
 [^more]: What's crazy is that if we do a VECM model on more than two series, say three, there can actually be more than one equlibrium relationship, and thus, more than one error correction term. If that were true, we would need the $\alpha$ matrix to be 3X2 and the equilibrium relationship matrix (with the $\beta$'s in it) would be 2X4, with the second equlibrium relationship in the second row. Don't worry about the details of this, it would be covered at length in a real time series class. 
 
@@ -101,7 +105,7 @@ As an intermediate step, write the error correction terms as a 2X1 matrix with t
 
 \left[
 \begin{array}
-  s\beta_0 & \beta_1 SPY_{t-1} & \beta_2 SHY_{t-1}
+  s\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}
 \end{array} 
 \right]
 
@@ -153,11 +157,7 @@ As an intermediate step, write the error correction terms as a 2X1 matrix with t
 
 \end{align}
 
-Now, the $\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}$ is the long run, or equilibrium relationship of the variables. Suppose we fit this VECM model and get estimates of the $\beta$s of $\beta_0 = 0.50$, $\beta_1 = 1$, $\beta_2 = -1$. That means we estimated the long run relationship between the two price series to be $0 = 0.50 + SPY_{t-1} - SHY_{t-1}$, or in other words $SHY_{t-1} = 0.50 + SPY_{t-1}$. 
-
-So if we fit a VECM, the $\beta$'s tell us the equilibrium relationship that the two series like to maintain. This is a random process, though, so there will be periods of fairly large deviation from this relationship. How, exactly, will the two series respond so that the relationship starts getting pushed back in line with its long run equilibrium?
-
-This is governed by the $\alpha$s. Suppose that $SPY$ gets too big relative to $SHY$ so that the long run equlibrium is violated and $0.50 + SPY_{t-1} - SHY_{t-1}>0$. Then to make the series come back into long run equlibrim, $SPY$ needs to go down relative to $SHY$ and $SHY$ needs to go up relative to $SPY$. This means $\alpha_1$ should be negative and $\alpha_2$ should be positive, to push the two prices back together when they drift apart. The magnitude of the $\alpha$'s govern which one repsonds more strongly to disequilibrium and are sometimes called speed of adjustment parameters.
+more explanation
 
 \begin{align}
 \left[
@@ -193,7 +193,8 @@ This is governed by the $\alpha$s. Suppose that $SPY$ gets too big relative to $
 
 \left[
 \begin{array}
-  sSPY_{t-1} \\
+  s1  \\
+  SPY_{t-1} \\
   SHY_{t-1}
 \end{array} 
 \right]
@@ -260,7 +261,7 @@ Now, let's do one more step of matrix algebra to prepare to talk about how we te
 
 \left[
 \begin{array}
-  s\gamma^{spy}_0 \\
+  \gamma^{spy}_0 \\
  \gamma^{SHY}_0 
 \end{array} 
 \right]
@@ -275,7 +276,8 @@ Now, let's do one more step of matrix algebra to prepare to talk about how we te
 
 \left[
 \begin{array}
-  sSPY_{t-1} \\
+  s1 \\
+  SPY_{t-1} \\
    SHY_{t-1}
 \end{array} 
 \right]
@@ -330,7 +332,7 @@ Now, let's do one more step of matrix algebra to prepare to talk about how we te
 
 Alright, so that is a lot of nitty gritty matrix algebra, that I've been purposefully trying to avoid in this series of blog posts. But, the payoff is that we can talk about how the statistical test for cointegration works in a way that is analagous to t-tests that are more familiar. 
 
-Recall that cointegration is when two or more variables ane known to be non-stationary, yet a linear combination of these exist so that the linear combination is stationary. Notice that the error correction term uses SPY and SHY prices in levels. We know that we cannot put non-stationary variables in a linear regression, yet if SPY and SHY are cointegrated these two regression equations will be ok. Why? Because when you multiply the matrix of $\beta$s times $[SPY_{t-1} SHY_{t-1}]'$ vector it will be stationary because the regression will find the $beta$\s (as long as such a matrix exists) that makes $\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}$ stationary. 
+Recall that cointegration is when two or more variables ane known to be non-stationary, yet a linear combination of these exist so that the linear combination is stationary. Notice that the error correction term uses SPY and SHY prices in levels. We know that we cannot put non-stationary variables in a linear regression, yet if SPY and SHY are cointegrated these two regression equations will be ok. Why? Because when you multiply the matrix of $\beta$s times $[1 SPY_{t-1} SHY_{t-1}]'$ vector it will be stationary because the regression will find the $\beta$'s (as long as such a matrix exists) that makes $\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}$ stationary. 
 
 Now if we don't know whether or not our variables are cointegration, we will need a test to determine this. The most common is called the Johansen cointegration test. What the Johansen test does is estimates the VECM and determines if the $\alpha \beta$ matrix is 'zero'. I put zero in quotes because the analagous concept of zero in numbers is the determinant in matrices. In a typical linear regression, if you are unsure whether you should include a variable on the right hand side you might just run the model and do a t-test to see if the coeficient on that variable is statistically different from zero. 
 

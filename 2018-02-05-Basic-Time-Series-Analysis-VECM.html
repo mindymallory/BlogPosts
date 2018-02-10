@@ -129,10 +129,8 @@ $(document).ready(function () {
 <ul>
 <li>Johansen Cointegration Tests</li>
 <li>Fitting and Interpreting a VECM Model</li>
-<li>Granger Causality of Cointegrated Series</li>
-<li></li>
 </ul>
-<p>We will continue our examples using SPY (the S&amp;P 500 exchange traded fund) and SHY (Goldman Sachs) prices.</p>
+<p>In this example we will use SPY (the S&amp;P 500 exchange traded fund) and SHY (iShares 1-3 year Treasury Bond) prices. We don’t use Goldman Sachs prices in this example (in contrast to the previous posts in this series) because it turns out SPY and GS are not cointegrated, so I found a different example that is.</p>
 <pre class="r"><code># If you are following along, uncomment the next lines and run once to install the required packages 
 # install.packages('ggplot2')
 # install.packages('xts')
@@ -153,15 +151,18 @@ time_series           &lt;- cbind(SPY, SHY)
 colnames(time_series) &lt;- c('SPY', 'SHY') </code></pre>
 <div id="vector-error-correction-model" class="section level1">
 <h1>Vector Error Correction Model</h1>
-<p>A VECM model adds a single term to the VAR in returns model that we learned in the last post. It adds an <span class="math inline">\(\alpha (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})\)</span> term to each equation. Using SPY and SHY prices, it looks like this.</p>
+<p>A VECM model adds a single term to the VAR model we learned in the last post. It adds an <span class="math inline">\(\alpha_i (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})\)</span> term to each equation. It looks like this.</p>
 <span class="math display">\[\begin{align}
 \Delta SPY_t &amp;= \gamma^{spy}_0 + \alpha_1 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}) + \gamma^{spy}_1 \Delta SPY_{t-1} + \gamma^{spy}_2 \Delta SPY_{t-2} + \gamma^{spy}_3 \Delta SHY_{t-1} + \gamma^{spy}_4 \Delta SHY_{t-2} + \nu^{spy}_t \\
 \Delta SHY_t  &amp;= \gamma^{SHY}_0  + \alpha_2 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}) + \gamma^{SHY}_1 \Delta SPY_{t-1}  + \gamma^{SHY}_2 \Delta SPY_{t-2}  + \gamma^{SHY}_3 \Delta SHY_{t-1}  + \gamma^{SHY}_4 \Delta SHY_{t-2}  + \nu^{SHY}_t 
 \end{align}\]</span>
-<p>The <span class="math inline">\(\gamma\)</span>’s are regression coeficients on the lagged SPY and SHY returns, just like the <span class="math inline">\(\beta\)</span>’s from our VAR blog post. The <span class="math inline">\(\alpha_1 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})\)</span>, and <span class="math inline">\(\alpha_2 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})\)</span> terms are called error correction terms.</p>
-<p>It’s at about this point where you may start appreciating why people say you should take linear algebra if you want to do econometrics. This is really messy looking and it is hard to really understand what is going on, what the heck those error correction terms are, and how on earth they might be useful.</p>
+<p>The <span class="math inline">\(\gamma\)</span>’s are regression coeficients on the lagged SPY and SHY returns, just like the <span class="math inline">\(\beta\)</span>’s from our VAR blog post. The <span class="math inline">\(\alpha_1 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})\)</span>, and <span class="math inline">\(\alpha_2 (\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1})\)</span> terms are new; they are called error correction terms.</p>
+<p>Now, the <span class="math inline">\(\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}\)</span> is the long run, or equilibrium relationship of the variables. Suppose we fit this VECM model and get estimates of the <span class="math inline">\(\beta\)</span>s of <span class="math inline">\(\beta_0 = 0.50\)</span>, <span class="math inline">\(\beta_1 = 1\)</span>, <span class="math inline">\(\beta_2 = -1\)</span>. That means we estimated the long run relationship between the two price series to be <span class="math inline">\(0 = 0.50 + SPY_{t-1} - SHY_{t-1}\)</span>, or in other words <span class="math inline">\(SHY_{t-1} = 0.50 + SPY_{t-1}\)</span>.</p>
+<p>So if we fit a VECM, the <span class="math inline">\(\beta\)</span>’s tell us the equilibrium relationship that the two series like to maintain. This is a random process, though, so there will be periods of fairly large deviation from this relationship. How, exactly, will the two series respond so that the relationship starts getting pushed back in line with its long run equilibrium?</p>
+<p>This is governed by the <span class="math inline">\(\alpha\)</span>s. Suppose that <span class="math inline">\(SPY\)</span> gets too big relative to <span class="math inline">\(SHY\)</span> so that the long run equlibrium is violated and <span class="math inline">\(0.50 + SPY_{t-1} - SHY_{t-1}&gt;0\)</span>. Then to make the series come back into long run equlibrim, <span class="math inline">\(SPY\)</span> needs to go down relative to <span class="math inline">\(SHY\)</span> and <span class="math inline">\(SHY\)</span> needs to go up relative to <span class="math inline">\(SPY\)</span>. This means <span class="math inline">\(\alpha_1\)</span> should be negative and <span class="math inline">\(\alpha_2\)</span> should be positive, to push the two prices back together when they drift apart. The magnitude of the <span class="math inline">\(\alpha\)</span>’s govern which one repsonds more strongly to disequilibrium and are sometimes called speed of adjustment parameters.</p>
+<p>It’s at about this point where you have to start appreciating why people tell you to take linear algebra if you want to do econometrics. This is really messy looking and it is hard to really understand what is going on, what the heck those error correction terms are, and how on earth they might be useful.</p>
 <p>Rewriting this in matrix form makes it much neater and (I think) aids understanding. If you’ve had linear algebra, make sure you can reproduce this next step; it will help your understanding of the working parts. If you haven’t yet had linear algebra, consider signing up next semester! and try to understand the explanation of what the <span class="math inline">\(\alpha\)</span>’s and <span class="math inline">\(\beta\)</span>’s are.</p>
-<p>As an intermediate step, write the error correction terms as a 2X1 matrix with the <span class="math inline">\(\alpha\)</span>’s in it times a 1X3 matrix with the <span class="math inline">\(\beta\)</span>’s and a linar combination of the price levels it in. The rest of it, is just the terms from a VAR written in matrix form too.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<p>As an intermediate step, write the error correction terms as a 2X1 vector with the <span class="math inline">\(\alpha\)</span>’s in it times a 1X1 ‘vector’ with the <span class="math inline">\(\beta\)</span>’s and a linar combination of the price levels it in. The rest of it, is just the terms from a VAR written in matrix form too.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
 <span class="math display">\[\begin{align}
 \left[
 \begin{array}
@@ -190,7 +191,7 @@ colnames(time_series) &lt;- c('SPY', 'SHY') </code></pre>
 
 \left[
 \begin{array}
-  s\beta_0 &amp; \beta_1 SPY_{t-1} &amp; \beta_2 SHY_{t-1}
+  s\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}
 \end{array} 
 \right]
 
@@ -241,9 +242,7 @@ colnames(time_series) &lt;- c('SPY', 'SHY') </code></pre>
 
 
 \end{align}\]</span>
-<p>Now, the <span class="math inline">\(\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}\)</span> is the long run, or equilibrium relationship of the variables. Suppose we fit this VECM model and get estimates of the <span class="math inline">\(\beta\)</span>s of <span class="math inline">\(\beta_0 = 0.50\)</span>, <span class="math inline">\(\beta_1 = 1\)</span>, <span class="math inline">\(\beta_2 = -1\)</span>. That means we estimated the long run relationship between the two price series to be <span class="math inline">\(0 = 0.50 + SPY_{t-1} - SHY_{t-1}\)</span>, or in other words <span class="math inline">\(SHY_{t-1} = 0.50 + SPY_{t-1}\)</span>.</p>
-<p>So if we fit a VECM, the <span class="math inline">\(\beta\)</span>’s tell us the equilibrium relationship that the two series like to maintain. This is a random process, though, so there will be periods of fairly large deviation from this relationship. How, exactly, will the two series respond so that the relationship starts getting pushed back in line with its long run equilibrium?</p>
-<p>This is governed by the <span class="math inline">\(\alpha\)</span>s. Suppose that <span class="math inline">\(SPY\)</span> gets too big relative to <span class="math inline">\(SHY\)</span> so that the long run equlibrium is violated and <span class="math inline">\(0.50 + SPY_{t-1} - SHY_{t-1}&gt;0\)</span>. Then to make the series come back into long run equlibrim, <span class="math inline">\(SPY\)</span> needs to go down relative to <span class="math inline">\(SHY\)</span> and <span class="math inline">\(SHY\)</span> needs to go up relative to <span class="math inline">\(SPY\)</span>. This means <span class="math inline">\(\alpha_1\)</span> should be negative and <span class="math inline">\(\alpha_2\)</span> should be positive, to push the two prices back together when they drift apart. The magnitude of the <span class="math inline">\(\alpha\)</span>’s govern which one repsonds more strongly to disequilibrium and are sometimes called speed of adjustment parameters.</p>
+<p>more explanation</p>
 <span class="math display">\[\begin{align}
 \left[
 \begin{array}
@@ -278,7 +277,8 @@ colnames(time_series) &lt;- c('SPY', 'SHY') </code></pre>
 
 \left[
 \begin{array}
-  sSPY_{t-1} \\
+  s1  \\
+  SPY_{t-1} \\
   SHY_{t-1}
 \end{array} 
 \right]
@@ -340,7 +340,7 @@ colnames(time_series) &lt;- c('SPY', 'SHY') </code></pre>
 
 \left[
 \begin{array}
-  s\gamma^{spy}_0 \\
+  \gamma^{spy}_0 \\
  \gamma^{SHY}_0 
 \end{array} 
 \right]
@@ -355,7 +355,8 @@ colnames(time_series) &lt;- c('SPY', 'SHY') </code></pre>
 
 \left[
 \begin{array}
-  sSPY_{t-1} \\
+  s1 \\
+  SPY_{t-1} \\
    SHY_{t-1}
 \end{array} 
 \right]
@@ -408,7 +409,7 @@ colnames(time_series) &lt;- c('SPY', 'SHY') </code></pre>
 <div id="the-johansen-test-for-cointegration" class="section level2">
 <h2>The Johansen Test for Cointegration</h2>
 <p>Alright, so that is a lot of nitty gritty matrix algebra, that I’ve been purposefully trying to avoid in this series of blog posts. But, the payoff is that we can talk about how the statistical test for cointegration works in a way that is analagous to t-tests that are more familiar.</p>
-<p>Recall that cointegration is when two or more variables ane known to be non-stationary, yet a linear combination of these exist so that the linear combination is stationary. Notice that the error correction term uses SPY and SHY prices in levels. We know that we cannot put non-stationary variables in a linear regression, yet if SPY and SHY are cointegrated these two regression equations will be ok. Why? Because when you multiply the matrix of <span class="math inline">\(\beta\)</span>s times <span class="math inline">\([SPY_{t-1} SHY_{t-1}]'\)</span> vector it will be stationary because the regression will find the <span class="math inline">\(beta\)</span>(as long as such a matrix exists) that makes <span class="math inline">\(\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}\)</span> stationary.</p>
+<p>Recall that cointegration is when two or more variables ane known to be non-stationary, yet a linear combination of these exist so that the linear combination is stationary. Notice that the error correction term uses SPY and SHY prices in levels. We know that we cannot put non-stationary variables in a linear regression, yet if SPY and SHY are cointegrated these two regression equations will be ok. Why? Because when you multiply the matrix of <span class="math inline">\(\beta\)</span>s times <span class="math inline">\([1 SPY_{t-1} SHY_{t-1}]'\)</span> vector it will be stationary because the regression will find the <span class="math inline">\(\beta\)</span>’s (as long as such a matrix exists) that makes <span class="math inline">\(\beta_0 + \beta_1 SPY_{t-1} + \beta_2 SHY_{t-1}\)</span> stationary.</p>
 <p>Now if we don’t know whether or not our variables are cointegration, we will need a test to determine this. The most common is called the Johansen cointegration test. What the Johansen test does is estimates the VECM and determines if the <span class="math inline">\(\alpha \beta\)</span> matrix is ‘zero’. I put zero in quotes because the analagous concept of zero in numbers is the determinant in matrices. In a typical linear regression, if you are unsure whether you should include a variable on the right hand side you might just run the model and do a t-test to see if the coeficient on that variable is statistically different from zero.</p>
 <p>The Johansen cointegration test does something similar. It estimates the VECM model and tests whether or not the determinant of the <span class="math inline">\(\alpha \beta\)</span> matrix is zero. If it is not zero, then you have cointegration (probably - I’ll explain more in a bit).</p>
 </div>
