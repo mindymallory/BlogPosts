@@ -1,15 +1,7 @@
----
-title: "How does Machine Learning fit into Agricultural Economics?"
-output:
-  html_document:
-    keep_md: true
----
+# How does Machine Learning fit into Agricultural Economics?
 
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = TRUE)
 
-```
 
 Machine learning and artificial intelligence are the biggest topics in tech right now, and the excitement is spilling over to economics. The 2018 ASSA meetings (I did not attend, just browsed the [program](https://assets.aeaweb.org/assets/production/files/6336.pdf)) had at least five sessions devoted to the topic of machine learning. [Susan Athey](https://www.gsb.stanford.edu/faculty-research/faculty/susan-athey), and [Guido Imbens](https://www.gsb.stanford.edu/faculty-research/faculty/guido-w-imbens) held a wildly popular continuing education workshop at the meetings that was later released as a [webcast](https://www.aeaweb.org/conference/cont-ed/2018-webcasts). At the 2017 ASSA meetings, which I did attend, there was only one or two sessions devoted to the topic of machine learning and AI in economics, but the sessions were standing room only. 
 
