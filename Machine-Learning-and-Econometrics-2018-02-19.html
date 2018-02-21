@@ -121,23 +121,28 @@ $(document).ready(function () {
 
 
 <p><em>This is the second in a series of posts where I document my own process in figuring out how machine learning relates to the classic econometrics one learns in a graduate program in economics. Note that I am a B+ practitioner of applied econometrics, so the ideas I am working through are not new, or may not even be fully accurate. But, I think many of us applied economists are starting to learn and dabble in this area and I thought it might be fruitful to learn publicly in these blog posts.</em></p>
-<p>I had at least three people reach out after my first machine learning post saying that they are starting to use these methods in their own research, and one former classmate in the corporate world who reached out to say these methods are already deeply embeded in their business. It feels like this is a really great time to sort these things out.</p>
+<p>I had at least three people reach out after my first machine learning post saying that they are starting to use these methods in their own research, one former classmate in the corporate world who reached out to say these methods are already deeply embeded in their business, and <a href="https://twitter.com/DrKeIthHCoble">@DrKeIthHCoble</a>, Ashok Mishra, <a href="https://twitter.com/shanferrell">@shanferrell</a>, and <a href="https://twitter.com/SpacePlowboy">@SpacePlowboy</a> just dropped an AEPP article on the topic, <a href="https://academic.oup.com/aepp/article/40/1/79/4863692">Big Data in Agriculture: A Challenge for the Future</a>. I’m even more convinced now is a really great time to sort these things out.</p>
 <div id="flexibility-versus-interpretability" class="section level1">
 <h1>Flexibility versus Interpretability</h1>
 <p>I started going through <a href="http://www-bcf.usc.edu/~gareth/ISL/index.html">An Introduction to Statistical Learning</a>, and the first thing that struck me is that linear regression gets two whole chapters devoted to it (Chapters 3 and 6). I was a bit surprised because my niave view was that linear regression was something primitive and completely separate from the concepts of machine learning, wheras in this book, linear regression is presented as a baseline or starting place for the concepts of machine learning. This left me with a question. Why is econometrics as usually presented as something separate methodologically from machine learning?</p>
-<p>In chapter 2, I think I got the answer to my question. The authors note that there is always a tension between flexibility and interpretability of a model. Linear regression is quite inflexible, but it is readily interpretable. Non-linear models can be quite complex in how an independent variable is functionally related to the dependent variable. In economics, we care about interpretability. We go through great pains to find instruments, design experiments, get random samples, in order to argue causaility of one variable on another. Inference and interpretability matter a great deal to us, so inflexible models are often attractive for this purpose. Additionally, less flexible models often perform fairly well compared to more flexible models in terms of predictive accuracy, at least in out of sample testing, due to overfitting in flexible models. So you get a lot of milage out of an inflexible model like linear regression, and more flexible models might not perform much better on meduim data anyway.</p>
+<p>In chapter 2, I think I got the answer to my question. The authors note that there is always a tension between flexibility and interpretability of a model. Linear regression is quite inflexible, but it is readily interpretable. Non-linear models can be quite complex in how an independent variable is functionally related to the dependent variable. In economics, we care about interpretability. We go through great pains to find instruments, design experiments, get random samples, in order to argue causaility of one variable on another. Inference and interpretability matter a great deal to us, so inflexible models are often attractive for this purpose. Additionally, less flexible models often perform fairly well compared to more flexible models in terms of predictive accuracy, at least in out of sample testing, due to the problem of overfitting in flexible models. So you get a lot of milage out of an inflexible model like linear regression, and more flexible models might not perform much better on meduim data anyway.</p>
 <p>Our analysis is often naturally constrained in terms of the number of independent variables one might include. First, economic theory often suggests what things might be important independent variables, so there is less need to throw everything into a regression and see if it predicts. Or, you might be constrained by the scarcity of relevent data. If you conduct a survey, you can only ask so many questions and then you only have that many potential independent varaibles. To use a concept from my first machine learning post, we often have ‘medium data’ not big data.</p>
-<p>So I think there are good reasons why econometrics has gravatated to linear regression models.</p>
+<p>I think there are good reasons why econometrics has gravatated to linear regression models as our bread and butter.</p>
 <ul>
 <li>We care very much about inference, less emphasis on prediction <span class="math inline">\(\Rightarrow\)</span> Linear regression often works well</li>
 <li>We often have medium data <span class="math inline">\(\Rightarrow\)</span> Linear regression often works well.</li>
 </ul>
-<p>So does that mean we should scoff at this machine learning stuff? No I don’t think so. Reading into chapter 5 (Resampling Methods) and chapter 6 (Linear Model Selection and Regularization), I think there are really nice opportunities to get a lot of benefit even in a linear model and even with medium data. Chapter 5 covers resampling methods including Cross-Validation and Bootstrap methods. Bootstrap is ubiquitous in econometrics, but cross-validation could be successfully utilized more, I think. Among those of us working with large ‘medium data’, like the Census or Ag Census, the methods are chapter 6 are fairly commonly employed, I think.</p>
-<p>I’ll explore a concept called cross validation a little more in the remainder of this post.</p>
+<p>So does that mean we should scoff at this statistical learning stuff? No I don’t think so. Reading into chapter 5 (Resampling Methods) and chapter 6 (Linear Model Selection and Regularization), I think there are really nice opportunities to get a lot of benefit even in a linear model and even with medium data. Chapter 5 covers resampling methods including Cross-Validation and Bootstrap methods. Bootstrap is ubiquitous in econometrics, but cross-validation could be successfully utilized more, I think. Among those of us working with large ‘medium data’, like the Census or Ag Census, the methods are chapter 6 are fairly commonly employed, I think.</p>
+<p>Statistical Learning Baseline:</p>
+<ul>
+<li>More focus on prediction <span class="math inline">\(\Rightarrow\)</span> Larger baseline set of models to choose from. Just so long as it predicts, who cares about causality!</li>
+<li>Means much more effort exerted at the model selection stage.</li>
+</ul>
+<p>Chapters 2 and 5 discuss the bias-variance tradoff in model selection and the k-Fold cross validation method of model selection, respectivly. I breifly summarize these concepts next. Then in the last part of the post I offer an example of k-Fold cross validation in building a model of corn prices using U.S. and World Stocks to Use.</p>
 </div>
 <div id="bias-variance-tradeoff" class="section level1">
 <h1>Bias-Variance Tradeoff</h1>
-<p>Another key is to understand the bias-variance tradeoff in building a model. If you have a model, <span class="math inline">\(y = f(x) + \epsilon\)</span>, so that <span class="math inline">\(y\)</span> is a function of <span class="math inline">\(f\)</span> plus some noise. Then, if we want to find out about how <span class="math inline">\(x\)</span> affects <span class="math inline">\(y\)</span>, or use known values of <span class="math inline">\(x\)</span> to predict <span class="math inline">\(y\)</span>, we need to find a function <span class="math inline">\(\hat{f}(x)\)</span> that is as close as possible to <span class="math inline">\(f\)</span>. The most common way to assess if our <span class="math inline">\(\hat{f}\)</span> is good or not is with mean squared error (MSE), or root mean squared error where we take the square root of the MSE. MSE is defined like this.</p>
+<p>A key to mastering model selection is to understand the bias-variance tradeoff. If you have a model, <span class="math inline">\(y = f(x) + \epsilon\)</span>, so that <span class="math inline">\(y\)</span> is a function of <span class="math inline">\(f\)</span> plus some noise. Then, if we want to find out how <span class="math inline">\(x\)</span> affects <span class="math inline">\(y\)</span>, or use known values of <span class="math inline">\(x\)</span> to predict <span class="math inline">\(y\)</span>, we need to find a function <span class="math inline">\(\hat{f}(x)\)</span> that is as close as possible to <span class="math inline">\(f\)</span>. The most common way to assess if our <span class="math inline">\(\hat{f}\)</span> is good or not is with mean squared error (MSE), or root mean squared error where we take the square root of the MSE. MSE is defined like this.</p>
 <p><span class="math display">\[MSE = \frac{1}{n}\sum_{i=1}^n (y_i - \hat{f}(x_i))^2 \]</span></p>
 <p>It justs takes all the model’s predictions, <span class="math inline">\(\hat{f}(x_i)\)</span>, calculates the square of how far they are from the actual value, <span class="math inline">\(y_i\)</span>, and averages that. So a low MSE is good - your predictions were not far away from the acutal values.</p>
 <p>So what contribues to a model’s errors? Head over to <a href="https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff">Wikipedia</a> for a proof, but for any particular observation,</p>
@@ -151,8 +156,8 @@ $(document).ready(function () {
 <p><em>This figure is taken from “An Introduction to Statistical Learning, with applications in R” (Springer, 2013) with permission from the authors: G. James, D. Witten, T. Hastie and R. Tibshirani</em></p>
 <p>Here you see a scatterplot of a data set with varaibles X and Y as circles in the left panel. To model the data they fit a linear model (in gold), and increasingly higher degree polinomials in black, blue, and green. Of course, the higher the degree of the polynomial the more ‘wiggly’ the <span class="math inline">\(\hat{f}\)</span>. Then in the right panel, they plot the MSE of these different candiate <span class="math inline">\(\hat{f}\)</span>’s. The training set MSE is in grey and the test set (out of sample in the parlance of price forecasting) MSE is in red.</p>
 <p>This illustrates an important point. Yes, variance and bias of a model move in opposite directions, but not nessessarily at the same rate (as flexibility increases I mean). Here, when you move from a linear, to a 3rd degree, to a 5th degree polynomial, you get dramatic reductions in the MSE of both the training set and the test set.</p>
-<p>This is because the reduction in bias overwhelms the increase in variance. Though, after about a 5th degree polynomial, the gains dissapear and you do not get much more out of adding higher polynomial terms to the <span class="math inline">\(\hat{f}\)</span>.</p>
-<p>The approach of using MSE for model selection seems to be pretty ubiquitous in machine learning contexts. In economics, it is commonly used to select among competing forecasting models, but I don’t think it is used that widely in models where inference is the goal.</p>
+<p>This is because the reduction in bias as you move away from the linear model overwhelms the increase in variance as you move toward a higher degree polynomial. Though, after about a 5th degree polynomial, the gains dissapear and you do not get much more out of adding higher polynomial terms to the <span class="math inline">\(\hat{f}\)</span>. So, if this were a model selection exercise in a real research problem, we would probably select a 5th degree polynomal.</p>
+<p>The approach of using MSE for model selection seems to be pretty ubiquitous in machine learning contexts. In economics, it is commonly used to select among competing forecasting models, but I don’t think it is used that widely for model selection in models where inference is the goal.</p>
 </div>
 <div id="cross-validation" class="section level1">
 <h1>Cross Validation</h1>
@@ -168,22 +173,1193 @@ $(document).ready(function () {
 </div>
 <div id="an-ag-example" class="section level1">
 <h1>An Ag Example</h1>
-<p>Ending Stocks. U.S. Million bushels. Row, 1000 MT.</p>
-<pre class="r"><code># install.packages('tibble')
+<p>To illustrate the potential of k-Fold cross validation in agricultural economics I will use it in a simple example on a pretty small data set. Every month the USDA puts out the World Agricultural Supply and Demand Estimates (WASDE). This report is followed very closely, especially during the growing season and harvest of commodities important to U.S. agriculture. It publishes what are called ‘balance sheets’ because they state in a table expectations for supply and demand from various sources for each commodity.</p>
+<p>For storable commodities the WASDE also have an estimate of ending stocks, the amount of the grain that is not consumed in the same marketing year it was grown in. Ending stocks are an important indicator or scarcity or surplus, and thus correllate with prices quite nicely. Rather than simply use ending stocks, a ratio called <span class="math inline">\(Stocks\)</span> <span class="math inline">\(to\)</span> <span class="math inline">\(Use\)</span> has come to be important in price analysis because it allows ending stocks to be expressed in a way that is not influenced by the (potentially growing) size of the market.</p>
+<p><span class="math display">\[Stocks \text{  } to \text{  } Use_t = \frac{Ending \text{  } Stocks_t}{Total \text{  } Use_t} \]</span></p>
+<p>Stocks to Use is simply the ratio of ending stocks to the total amount of the commodity ‘used’.</p>
+<div id="the-data" class="section level2">
+<h2>The Data</h2>
+<p>Data from historical WASDE reports can be retrieved from the <a href="https://www.ers.usda.gov/data-products/feed-grains-database/">USDA’s Feed Grains Database</a>. If you want to follow along, download the .csv file containing ending stocks for corn in the the U.S. and the rest of the world (ROW), as well as average prices recieved by farmers in the U.S. The following code imports the .csv file (make sure to modify the file path in <code>read.csv()</code> to wherever you put the stocks.csv file if you are following along). Then the code creates the stocks to use variable in the line that calls the <code>mutate()</code> function.</p>
+<pre class="r"><code># If you haven't installed any of the packages listed below, do so with the &quot;install.packages('tibble')&quot; command. 
 library(tibble)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
 stocks  &lt;- read.csv('images/stocks.csv')
 stocks  &lt;- as_tibble(stocks)
 stocks  &lt;- mutate(stocks, USStockUse = USEndingStocks/USTotalUse, WorldStockUse = ROWEndingStocks/WorldTotalUse)
 
-us      &lt;- ggplot(stocks, aes(x = USStockUse, y = PriceRecievedFarmers)) + geom_point() + theme_bw()
-us</code></pre>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
-<pre class="r"><code>ROW      &lt;- ggplot(stocks, aes(x = WorldStockUse, y = PriceRecievedFarmers)) + geom_point() + theme_bw()
-ROW</code></pre>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+stocks %&gt;% kable(caption = &quot;U.S. and World Ending Stocks, Total Use, Prices Recieved by Farmers, and Stocks to USE, 1975-2017&quot;, &quot;html&quot;) %&gt;% 
+  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;))</code></pre>
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<caption>
+U.S. and World Ending Stocks, Total Use, Prices Recieved by Farmers, and Stocks to USE, 1975-2017
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:right;">
+USEndingStocks
+</th>
+<th style="text-align:right;">
+ROWEndingStocks
+</th>
+<th style="text-align:right;">
+USTotalUse
+</th>
+<th style="text-align:right;">
+WorldTotalUse
+</th>
+<th style="text-align:right;">
+PriceRecievedFarmers
+</th>
+<th style="text-align:right;">
+USStockUse
+</th>
+<th style="text-align:right;">
+WorldStockUse
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1975
+</td>
+<td style="text-align:right;">
+633.200
+</td>
+<td style="text-align:right;">
+36411
+</td>
+<td style="text-align:right;">
+5767.054
+</td>
+<td style="text-align:right;">
+228199
+</td>
+<td style="text-align:right;">
+2.54
+</td>
+<td style="text-align:right;">
+0.1097961
+</td>
+<td style="text-align:right;">
+0.1595581
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:right;">
+1135.600
+</td>
+<td style="text-align:right;">
+39491
+</td>
+<td style="text-align:right;">
+5789.200
+</td>
+<td style="text-align:right;">
+235034
+</td>
+<td style="text-align:right;">
+2.15
+</td>
+<td style="text-align:right;">
+0.1961584
+</td>
+<td style="text-align:right;">
+0.1680225
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1977
+</td>
+<td style="text-align:right;">
+1435.900
+</td>
+<td style="text-align:right;">
+40833
+</td>
+<td style="text-align:right;">
+6207.139
+</td>
+<td style="text-align:right;">
+246973
+</td>
+<td style="text-align:right;">
+2.02
+</td>
+<td style="text-align:right;">
+0.2313304
+</td>
+<td style="text-align:right;">
+0.1653339
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1978
+</td>
+<td style="text-align:right;">
+1709.500
+</td>
+<td style="text-align:right;">
+47957
+</td>
+<td style="text-align:right;">
+6995.479
+</td>
+<td style="text-align:right;">
+254029
+</td>
+<td style="text-align:right;">
+2.25
+</td>
+<td style="text-align:right;">
+0.2443721
+</td>
+<td style="text-align:right;">
+0.1887855
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1979
+</td>
+<td style="text-align:right;">
+2034.300
+</td>
+<td style="text-align:right;">
+59481
+</td>
+<td style="text-align:right;">
+7604.060
+</td>
+<td style="text-align:right;">
+273641
+</td>
+<td style="text-align:right;">
+2.52
+</td>
+<td style="text-align:right;">
+0.2675281
+</td>
+<td style="text-align:right;">
+0.2173687
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1980
+</td>
+<td style="text-align:right;">
+1392.100
+</td>
+<td style="text-align:right;">
+67180
+</td>
+<td style="text-align:right;">
+7282.444
+</td>
+<td style="text-align:right;">
+293625
+</td>
+<td style="text-align:right;">
+3.11
+</td>
+<td style="text-align:right;">
+0.1911584
+</td>
+<td style="text-align:right;">
+0.2287952
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1981
+</td>
+<td style="text-align:right;">
+2536.600
+</td>
+<td style="text-align:right;">
+62725
+</td>
+<td style="text-align:right;">
+6974.706
+</td>
+<td style="text-align:right;">
+290686
+</td>
+<td style="text-align:right;">
+2.50
+</td>
+<td style="text-align:right;">
+0.3636856
+</td>
+<td style="text-align:right;">
+0.2157827
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1982
+</td>
+<td style="text-align:right;">
+3523.100
+</td>
+<td style="text-align:right;">
+60273
+</td>
+<td style="text-align:right;">
+7249.090
+</td>
+<td style="text-align:right;">
+279377
+</td>
+<td style="text-align:right;">
+2.55
+</td>
+<td style="text-align:right;">
+0.4860058
+</td>
+<td style="text-align:right;">
+0.2157407
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1983
+</td>
+<td style="text-align:right;">
+1006.300
+</td>
+<td style="text-align:right;">
+63421
+</td>
+<td style="text-align:right;">
+6692.759
+</td>
+<td style="text-align:right;">
+287033
+</td>
+<td style="text-align:right;">
+3.21
+</td>
+<td style="text-align:right;">
+0.1503565
+</td>
+<td style="text-align:right;">
+0.2209537
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1984
+</td>
+<td style="text-align:right;">
+1648.200
+</td>
+<td style="text-align:right;">
+76287
+</td>
+<td style="text-align:right;">
+7031.963
+</td>
+<td style="text-align:right;">
+297524
+</td>
+<td style="text-align:right;">
+2.63
+</td>
+<td style="text-align:right;">
+0.2343869
+</td>
+<td style="text-align:right;">
+0.2564062
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1985
+</td>
+<td style="text-align:right;">
+4039.522
+</td>
+<td style="text-align:right;">
+75069
+</td>
+<td style="text-align:right;">
+6494.029
+</td>
+<td style="text-align:right;">
+285517
+</td>
+<td style="text-align:right;">
+2.23
+</td>
+<td style="text-align:right;">
+0.6220363
+</td>
+<td style="text-align:right;">
+0.2629230
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1986
+</td>
+<td style="text-align:right;">
+4881.693
+</td>
+<td style="text-align:right;">
+80862
+</td>
+<td style="text-align:right;">
+7385.350
+</td>
+<td style="text-align:right;">
+298388
+</td>
+<td style="text-align:right;">
+1.50
+</td>
+<td style="text-align:right;">
+0.6609968
+</td>
+<td style="text-align:right;">
+0.2709962
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1987
+</td>
+<td style="text-align:right;">
+4259.086
+</td>
+<td style="text-align:right;">
+89488
+</td>
+<td style="text-align:right;">
+7757.318
+</td>
+<td style="text-align:right;">
+304440
+</td>
+<td style="text-align:right;">
+1.94
+</td>
+<td style="text-align:right;">
+0.5490410
+</td>
+<td style="text-align:right;">
+0.2939430
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1988
+</td>
+<td style="text-align:right;">
+1930.428
+</td>
+<td style="text-align:right;">
+96217
+</td>
+<td style="text-align:right;">
+7260.121
+</td>
+<td style="text-align:right;">
+319881
+</td>
+<td style="text-align:right;">
+2.54
+</td>
+<td style="text-align:right;">
+0.2658947
+</td>
+<td style="text-align:right;">
+0.3007900
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1989
+</td>
+<td style="text-align:right;">
+1344.457
+</td>
+<td style="text-align:right;">
+98715
+</td>
+<td style="text-align:right;">
+8119.826
+</td>
+<td style="text-align:right;">
+327783
+</td>
+<td style="text-align:right;">
+2.36
+</td>
+<td style="text-align:right;">
+0.1655771
+</td>
+<td style="text-align:right;">
+0.3011596
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1990
+</td>
+<td style="text-align:right;">
+1521.245
+</td>
+<td style="text-align:right;">
+102761
+</td>
+<td style="text-align:right;">
+7760.655
+</td>
+<td style="text-align:right;">
+319954
+</td>
+<td style="text-align:right;">
+2.28
+</td>
+<td style="text-align:right;">
+0.1960202
+</td>
+<td style="text-align:right;">
+0.3211743
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1991
+</td>
+<td style="text-align:right;">
+1100.311
+</td>
+<td style="text-align:right;">
+113106
+</td>
+<td style="text-align:right;">
+7915.336
+</td>
+<td style="text-align:right;">
+332232
+</td>
+<td style="text-align:right;">
+2.37
+</td>
+<td style="text-align:right;">
+0.1390100
+</td>
+<td style="text-align:right;">
+0.3404428
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1992
+</td>
+<td style="text-align:right;">
+2112.981
+</td>
+<td style="text-align:right;">
+109068
+</td>
+<td style="text-align:right;">
+8471.119
+</td>
+<td style="text-align:right;">
+339172
+</td>
+<td style="text-align:right;">
+2.07
+</td>
+<td style="text-align:right;">
+0.2494335
+</td>
+<td style="text-align:right;">
+0.3215714
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1993
+</td>
+<td style="text-align:right;">
+850.143
+</td>
+<td style="text-align:right;">
+107849
+</td>
+<td style="text-align:right;">
+7621.383
+</td>
+<td style="text-align:right;">
+349304
+</td>
+<td style="text-align:right;">
+2.50
+</td>
+<td style="text-align:right;">
+0.1115471
+</td>
+<td style="text-align:right;">
+0.3087540
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1994
+</td>
+<td style="text-align:right;">
+1557.840
+</td>
+<td style="text-align:right;">
+113777
+</td>
+<td style="text-align:right;">
+9352.380
+</td>
+<td style="text-align:right;">
+353437
+</td>
+<td style="text-align:right;">
+2.26
+</td>
+<td style="text-align:right;">
+0.1665715
+</td>
+<td style="text-align:right;">
+0.3219159
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1995
+</td>
+<td style="text-align:right;">
+425.942
+</td>
+<td style="text-align:right;">
+122467
+</td>
+<td style="text-align:right;">
+8548.436
+</td>
+<td style="text-align:right;">
+376204
+</td>
+<td style="text-align:right;">
+3.24
+</td>
+<td style="text-align:right;">
+0.0498269
+</td>
+<td style="text-align:right;">
+0.3255335
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1996
+</td>
+<td style="text-align:right;">
+883.161
+</td>
+<td style="text-align:right;">
+143886
+</td>
+<td style="text-align:right;">
+8788.599
+</td>
+<td style="text-align:right;">
+382278
+</td>
+<td style="text-align:right;">
+2.71
+</td>
+<td style="text-align:right;">
+0.1004894
+</td>
+<td style="text-align:right;">
+0.3763910
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1997
+</td>
+<td style="text-align:right;">
+1307.803
+</td>
+<td style="text-align:right;">
+133982
+</td>
+<td style="text-align:right;">
+8791.000
+</td>
+<td style="text-align:right;">
+388191
+</td>
+<td style="text-align:right;">
+2.43
+</td>
+<td style="text-align:right;">
+0.1487661
+</td>
+<td style="text-align:right;">
+0.3451445
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1998
+</td>
+<td style="text-align:right;">
+1786.977
+</td>
+<td style="text-align:right;">
+145972
+</td>
+<td style="text-align:right;">
+9298.317
+</td>
+<td style="text-align:right;">
+395867
+</td>
+<td style="text-align:right;">
+1.94
+</td>
+<td style="text-align:right;">
+0.1921828
+</td>
+<td style="text-align:right;">
+0.3687400
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1999
+</td>
+<td style="text-align:right;">
+1717.549
+</td>
+<td style="text-align:right;">
+150779
+</td>
+<td style="text-align:right;">
+9514.784
+</td>
+<td style="text-align:right;">
+412536
+</td>
+<td style="text-align:right;">
+1.82
+</td>
+<td style="text-align:right;">
+0.1805137
+</td>
+<td style="text-align:right;">
+0.3654930
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2000
+</td>
+<td style="text-align:right;">
+1899.108
+</td>
+<td style="text-align:right;">
+126880
+</td>
+<td style="text-align:right;">
+9740.316
+</td>
+<td style="text-align:right;">
+412710
+</td>
+<td style="text-align:right;">
+1.85
+</td>
+<td style="text-align:right;">
+0.1949740
+</td>
+<td style="text-align:right;">
+0.3074314
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2001
+</td>
+<td style="text-align:right;">
+1596.426
+</td>
+<td style="text-align:right;">
+110808
+</td>
+<td style="text-align:right;">
+9815.402
+</td>
+<td style="text-align:right;">
+424591
+</td>
+<td style="text-align:right;">
+1.97
+</td>
+<td style="text-align:right;">
+0.1626450
+</td>
+<td style="text-align:right;">
+0.2609759
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2002
+</td>
+<td style="text-align:right;">
+1086.673
+</td>
+<td style="text-align:right;">
+99276
+</td>
+<td style="text-align:right;">
+9490.986
+</td>
+<td style="text-align:right;">
+427821
+</td>
+<td style="text-align:right;">
+2.32
+</td>
+<td style="text-align:right;">
+0.1144953
+</td>
+<td style="text-align:right;">
+0.2320503
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2003
+</td>
+<td style="text-align:right;">
+958.091
+</td>
+<td style="text-align:right;">
+80334
+</td>
+<td style="text-align:right;">
+10229.950
+</td>
+<td style="text-align:right;">
+438453
+</td>
+<td style="text-align:right;">
+2.42
+</td>
+<td style="text-align:right;">
+0.0936555
+</td>
+<td style="text-align:right;">
+0.1832215
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2004
+</td>
+<td style="text-align:right;">
+2113.972
+</td>
+<td style="text-align:right;">
+77364
+</td>
+<td style="text-align:right;">
+10660.530
+</td>
+<td style="text-align:right;">
+465941
+</td>
+<td style="text-align:right;">
+2.06
+</td>
+<td style="text-align:right;">
+0.1982990
+</td>
+<td style="text-align:right;">
+0.1660382
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2005
+</td>
+<td style="text-align:right;">
+1967.161
+</td>
+<td style="text-align:right;">
+73472
+</td>
+<td style="text-align:right;">
+11267.804
+</td>
+<td style="text-align:right;">
+475772
+</td>
+<td style="text-align:right;">
+2.00
+</td>
+<td style="text-align:right;">
+0.1745825
+</td>
+<td style="text-align:right;">
+0.1544269
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2006
+</td>
+<td style="text-align:right;">
+1303.647
+</td>
+<td style="text-align:right;">
+75639
+</td>
+<td style="text-align:right;">
+11206.620
+</td>
+<td style="text-align:right;">
+499570
+</td>
+<td style="text-align:right;">
+3.04
+</td>
+<td style="text-align:right;">
+0.1163283
+</td>
+<td style="text-align:right;">
+0.1514082
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2007
+</td>
+<td style="text-align:right;">
+1624.150
+</td>
+<td style="text-align:right;">
+86418
+</td>
+<td style="text-align:right;">
+12737.393
+</td>
+<td style="text-align:right;">
+515187
+</td>
+<td style="text-align:right;">
+4.20
+</td>
+<td style="text-align:right;">
+0.1275104
+</td>
+<td style="text-align:right;">
+0.1677410
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2008
+</td>
+<td style="text-align:right;">
+1673.311
+</td>
+<td style="text-align:right;">
+100739
+</td>
+<td style="text-align:right;">
+12007.572
+</td>
+<td style="text-align:right;">
+526638
+</td>
+<td style="text-align:right;">
+4.06
+</td>
+<td style="text-align:right;">
+0.1393547
+</td>
+<td style="text-align:right;">
+0.1912870
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2009
+</td>
+<td style="text-align:right;">
+1707.787
+</td>
+<td style="text-align:right;">
+97474
+</td>
+<td style="text-align:right;">
+13041.023
+</td>
+<td style="text-align:right;">
+546250
+</td>
+<td style="text-align:right;">
+3.55
+</td>
+<td style="text-align:right;">
+0.1309550
+</td>
+<td style="text-align:right;">
+0.1784421
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2010
+</td>
+<td style="text-align:right;">
+1127.645
+</td>
+<td style="text-align:right;">
+93924
+</td>
+<td style="text-align:right;">
+13033.141
+</td>
+<td style="text-align:right;">
+570041
+</td>
+<td style="text-align:right;">
+5.18
+</td>
+<td style="text-align:right;">
+0.0865214
+</td>
+<td style="text-align:right;">
+0.1647671
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2011
+</td>
+<td style="text-align:right;">
+989.027
+</td>
+<td style="text-align:right;">
+103071
+</td>
+<td style="text-align:right;">
+12481.947
+</td>
+<td style="text-align:right;">
+607875
+</td>
+<td style="text-align:right;">
+6.22
+</td>
+<td style="text-align:right;">
+0.0792366
+</td>
+<td style="text-align:right;">
+0.1695595
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2012
+</td>
+<td style="text-align:right;">
+821.185
+</td>
+<td style="text-align:right;">
+112089
+</td>
+<td style="text-align:right;">
+11082.899
+</td>
+<td style="text-align:right;">
+606563
+</td>
+<td style="text-align:right;">
+6.89
+</td>
+<td style="text-align:right;">
+0.0740948
+</td>
+<td style="text-align:right;">
+0.1847937
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2013
+</td>
+<td style="text-align:right;">
+1231.904
+</td>
+<td style="text-align:right;">
+142987
+</td>
+<td style="text-align:right;">
+13454.039
+</td>
+<td style="text-align:right;">
+661861
+</td>
+<td style="text-align:right;">
+4.46
+</td>
+<td style="text-align:right;">
+0.0915639
+</td>
+<td style="text-align:right;">
+0.2160378
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2014
+</td>
+<td style="text-align:right;">
+1731.164
+</td>
+<td style="text-align:right;">
+165766
+</td>
+<td style="text-align:right;">
+13747.918
+</td>
+<td style="text-align:right;">
+686099
+</td>
+<td style="text-align:right;">
+3.70
+</td>
+<td style="text-align:right;">
+0.1259219
+</td>
+<td style="text-align:right;">
+0.2416065
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2015
+</td>
+<td style="text-align:right;">
+1737.058
+</td>
+<td style="text-align:right;">
+170837
+</td>
+<td style="text-align:right;">
+13663.635
+</td>
+<td style="text-align:right;">
+669447
+</td>
+<td style="text-align:right;">
+3.61
+</td>
+<td style="text-align:right;">
+0.1271300
+</td>
+<td style="text-align:right;">
+0.2551912
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2016
+</td>
+<td style="text-align:right;">
+2293.303
+</td>
+<td style="text-align:right;">
+171509
+</td>
+<td style="text-align:right;">
+14648.801
+</td>
+<td style="text-align:right;">
+747315
+</td>
+<td style="text-align:right;">
+3.36
+</td>
+<td style="text-align:right;">
+0.1565523
+</td>
+<td style="text-align:right;">
+0.2295003
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2017
+</td>
+<td style="text-align:right;">
+2352.370
+</td>
+<td style="text-align:right;">
+143333
+</td>
+<td style="text-align:right;">
+14595.000
+</td>
+<td style="text-align:right;">
+749749
+</td>
+<td style="text-align:right;">
+3.30
+</td>
+<td style="text-align:right;">
+0.1611764
+</td>
+<td style="text-align:right;">
+0.1911746
+</td>
+</tr>
+</tbody>
+</table>
+<p>Source: <a href="https://www.ers.usda.gov/data-products/feed-grains-database/">USDA Feedgrains Database</a></p>
+<p>This is clearly not big data if I can print the whole data set right in the blog post! We have 43 years of data. Note that the 2017 observation is an expectation. We are not sure what carryout for the 2017 marketing year will be. The U.S. ending stocks and total use are in millions of bushels. The World ending stocks and total use are in 1,000 MT.</p>
+<pre class="r"><code>us      &lt;- ggplot(stocks, aes(x = USStockUse, y = PriceRecievedFarmers)) + geom_point() + theme_bw() + xlim(0, .7)
+
+ROW      &lt;- ggplot(stocks, aes(x = WorldStockUse, y = PriceRecievedFarmers)) + geom_point() + theme_bw()  + xlim(0, .7)
+
+grid.arrange(us, ROW, nrow = 1, top = &quot;U.S. and World Stocks to Use vs Prices Recieved by U.S. Farmers, 1975-2017&quot;)</code></pre>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>In the U.S. panel, a clear non-linear relationship if evident. The points from 2010-2012 had low stocks to use and exceptionally high prices. The points with the highest stocks to use and lowest prices are from the 1980’s when the U.S. government was in the business of holding stocks to support prices. Despite the non-linearity, there is clearly a relationship between stocks to use and prices for corn, as we would expect.</p>
+<p>In a <a href="http://farmdocdaily.illinois.edu/2015/04/relationship-stock-to-use-and-corn-prices.html">farmdoc Daily article</a> Darrel Good and Scott Irwin propose,</p>
+<p><span class="math display">\[Price = \alpha + \beta \frac{1}{Stocks \text{  } to \text{  } Use} + \epsilon,\]</span></p>
+<p>as a model for ‘predicting’ corn prices. In this example, we will see if we can find another functional form that performs better in terms of MSE, and we will use a 5-Fold cross validation to assess the models. Since World Stocks to Use might give additional predictive power, we will work it into some of our specifications.</p>
+</div>
 </div>
 
 
