@@ -69,4 +69,34 @@ Cross Validation just takes this one step further. In k-Fold cross validation yo
 *This figure is taken from "An Introduction to Statistical Learning, with applications in R"  (Springer, 2013) with permission from the authors: G. James, D. Witten,  T. Hastie and R. Tibshirani*
 
 
+
+# An Ag Example
+
+Ending Stocks. U.S. Million bushels. Row, 1000 MT. 
+
+
+```r
+# install.packages('tibble')
+library(tibble)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+stocks  <- read.csv('images/stocks.csv')
+stocks  <- as_tibble(stocks)
+stocks  <- mutate(stocks, USStockUse = USEndingStocks/USTotalUse, WorldStockUse = ROWEndingStocks/WorldTotalUse)
+
+us      <- ggplot(stocks, aes(x = USStockUse, y = PriceRecievedFarmers)) + geom_point() + theme_bw()
+us
+```
+
+![](Machine-Learning-and-Econometrics-2018-02-19_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
+ROW      <- ggplot(stocks, aes(x = WorldStockUse, y = PriceRecievedFarmers)) + geom_point() + theme_bw()
+ROW
+```
+
+![](Machine-Learning-and-Econometrics-2018-02-19_files/figure-html/unnamed-chunk-2-2.png)<!-- -->
+
+
 The advantage of this is that it allows the variance and bias of the fitted models to be revealed a little more completely. By using different subsets of your data as the test set you get a sense of how much individual observations are moving around your MSE estimates. When conducting a k-Fold cross validation, you typically just average the MSE's given by each of the k model estimates. 
