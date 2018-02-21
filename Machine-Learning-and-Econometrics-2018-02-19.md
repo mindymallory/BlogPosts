@@ -35,3 +35,33 @@ The k-Fold Cross-Validation is a method to
 ![Figure 5.5 from ISL](images\5.5-ISLR.jpg)
 
 *This figure is taken from "An Introduction to Statistical Learning, with applications in R"  (Springer, 2013) with permission from the authors: G. James, D. Witten,  T. Hastie and R. Tibshirani*
+
+
+
+# An Ag Example
+
+Ending Stocks. U.S. Million bushels. Row, 1000 MT. 
+
+
+```r
+# install.packages('tibble')
+library(tibble)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+stocks  <- read.csv('images/stocks.csv')
+stocks  <- as_tibble(stocks)
+stocks  <- mutate(stocks, USStockUse = USEndingStocks/USTotalUse, WorldStockUse = ROWEndingStocks/WorldTotalUse)
+
+us      <- ggplot(stocks, aes(x = USStockUse, y = PriceRecievedFarmers)) + geom_point() + theme_bw()
+us
+```
+
+![](Machine-Learning-and-Econometrics-2018-02-19_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
+ROW      <- ggplot(stocks, aes(x = WorldStockUse, y = PriceRecievedFarmers)) + geom_point() + theme_bw()
+ROW
+```
+
+![](Machine-Learning-and-Econometrics-2018-02-19_files/figure-html/unnamed-chunk-2-2.png)<!-- -->
