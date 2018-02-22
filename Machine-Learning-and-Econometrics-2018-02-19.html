@@ -188,6 +188,7 @@ library(ggplot2)
 library(knitr)
 library(kableExtra)
 library(gridExtra)
+library(boot)
 stocks  &lt;- read.csv('images/stocks.csv')
 stocks  &lt;- as_tibble(stocks)
 stocks  &lt;- mutate(stocks, USStockUse = USEndingStocks/USTotalUse, WorldStockUse = ROWEndingStocks/WorldTotalUse)
@@ -1358,7 +1359,267 @@ grid.arrange(us, ROW, nrow = 1, top = &quot;U.S. and World Stocks to Use vs Pric
 <p>In the U.S. panel, a clear non-linear relationship if evident. The points from 2010-2012 had low stocks to use and exceptionally high prices. The points with the highest stocks to use and lowest prices are from the 1980’s when the U.S. government was in the business of holding stocks to support prices. Despite the non-linearity, there is clearly a relationship between stocks to use and prices for corn, as we would expect.</p>
 <p>In a <a href="http://farmdocdaily.illinois.edu/2015/04/relationship-stock-to-use-and-corn-prices.html">farmdoc Daily article</a> Darrel Good and Scott Irwin propose,</p>
 <p><span class="math display">\[Price = \alpha + \beta \frac{1}{Stocks \text{  } to \text{  } Use} + \epsilon,\]</span></p>
-<p>as a model for ‘predicting’ corn prices. In this example, we will see if we can find another functional form that performs better in terms of MSE, and we will use a 5-Fold cross validation to assess the models. Since World Stocks to Use might give additional predictive power, we will work it into some of our specifications.</p>
+<p>as a model for ‘predicting’ corn prices. This certainly seems like a sensible choice, given that the shape of the relationship resembles <span class="math inline">\(y = \frac{1}{x}\)</span>, but in this example, we will see if we can find another functional form that performs better in terms of cross validation MSE. We will also consider if the log of the stocks to use variable might fit, since this could also produce close to the correct curved shape (with a negative coeficient of course). I should note that in the farmdoc daily article, Good and Irwin use a much shorter sample that possibly reflects more closely current supply and demand dynamics better. But, in our case, we need the sample size to do the more data intensive cross validation.</p>
+<p>We will use a 5-Fold cross validation to assess the models. Since World Stocks to Use might give additional predictive power, we will work it into some of our specifications. We will consider each of the following models with the polynomial degree from 1 to 5:</p>
+<table>
+<colgroup>
+<col width="21%"></col>
+<col width="78%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Model</th>
+<th align="left">Functional Form</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Model 1</td>
+<td align="left"><span class="math inline">\(Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(\frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} \Big)^i + \epsilon\)</span></td>
+</tr>
+<tr class="even">
+<td align="left">Model 2</td>
+<td align="left"><span class="math inline">\(Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(\frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} \Big)^i + \sum_{i=1}^n \gamma_i \Big(\frac{1}{World \text{ } Stocks \text{ } to \text{ } Use} \Big)^i + \epsilon\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left">Model 3</td>
+<td align="left"><span class="math inline">\(Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(log(US \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \epsilon\)</span></td>
+</tr>
+<tr class="even">
+<td align="left">Model 4</td>
+<td align="left"><span class="math inline">\(Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(log(US \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \sum_{i=1}^n \gamma_i \Big(log(World \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \epsilon\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left">Model 5</td>
+<td align="left"><span class="math inline">\(Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(\frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} \Big)^i + \sum_{i=1}^n \gamma_i \Big(log(World \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \epsilon\)</span></td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>set.seed(17)
+cv.us=rep(0,5)
+cv.World=rep(0,5)
+cv.Lus=rep(0,5)
+cv.LWorld=rep(0,5)
+cv.World2=rep(0,5)
+for (i in 1:5){
+    glm.fit=glm(PriceRecievedFarmers~poly(1/USStockUse, i) ,data=stocks)
+    cv.us[i]=cv.glm(stocks,glm.fit,K=5)$delta[1]
+}
+
+for (i in 1:5){
+  glm.fit.World=glm(PriceRecievedFarmers~poly(1/USStockUse, i) + poly(1/WorldStockUse, i) ,data=stocks)
+  cv.World[i]=cv.glm(stocks,glm.fit.World,K=5)$delta[1]
+}
+
+for (i in 1:5){
+    glm.fit=glm(PriceRecievedFarmers~poly(log(USStockUse), i) ,data=stocks)
+    cv.Lus[i]=cv.glm(stocks,glm.fit,K=5)$delta[1]
+}
+
+for (i in 1:5){
+  glm.fit.World=glm(PriceRecievedFarmers~poly(log(USStockUse), i) + poly(log(WorldStockUse), i),data=stocks)
+  cv.LWorld[i]=cv.glm(stocks,glm.fit.World,K=5)$delta[1]
+}
+
+for (i in 1:5){
+  glm.fit.World=glm(PriceRecievedFarmers~poly(1/USStockUse, i) + poly(log(WorldStockUse), i),data=stocks)
+  cv.World2[i]=cv.glm(stocks,glm.fit.World,K=5)$delta[1]
+}
+
+res_tibble        &lt;- cbind(cv.us, cv.World, cv.Lus, cv.LWorld, cv.World2) %&gt;% as_tibble() %&gt;% add_column(PolynomialDegree = seq(1:5)) %&gt;% round(2)
+
+colnames(res_tibble) &lt;- c('Model 1', 'Model 2', 'Model 3', 'Model 4', 'Model 5', 'PolynomialDegree')
+
+p1 &lt;- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.us)) + geom_line() + ylim(0, 75) +  labs(x = 'Model 1 Poly Degree', y = 'Cross Validation MSE') + theme_bw()  
+p2 &lt;- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.World)) + geom_line() + ylim(0, 75) + labs(x = 'Model 2 Poly Degree', y = '') + theme_bw()
+p3 &lt;- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.Lus)) + geom_line() + ylim(0, 75) + labs(x = 'Model 3 Poly Degree', y = '') + theme_bw()
+p4 &lt;- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.LWorld)) + geom_line() + ylim(0, 75) + labs(x = 'Model 4 Poly Degree', y = '') + theme_bw()
+p5 &lt;- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.World2)) + geom_line() + ylim(0, 75) + labs(x = 'Model 5 Poly Degree', y = '') + theme_bw()
+grid.arrange(p1, p2, p3, p4, p5, nrow = 1, top = &quot;Cross Validation MSE for Competing Models&quot;)</code></pre>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>The figure shows the cross validation MSE we get from each of the five models fit with polynomial degree 1:5. Remember, to get the cross validation MSE the <code>cv.glm()</code> function with <code>k = 5</code> is creating 5 different non-overlapping test and hold out samples. The MSE plotted in the figure is average of the MSE from each of the 5 different hold out samples.</p>
+<p>In the table below we present the same information, the cross validation MSE by model type and for each polynomial degree. Since there were several models with very similar MSE we can see exactly which models are getting the minimum MSE.</p>
+<p>Recall that Model 1 with a 1 degree polynomial is the model proposed by Good and Irwin in the farmdoc Daily article. This model does quite well, it comes in third, and the models that do better only do marginally better. The first place model is Model 5 with polynomial degree 1; the second place model is Model 4 with polynomial degree 2.</p>
+<pre class="r"><code>res_tibble[, c(6, 1:5)] %&gt;% kable(caption = &quot;Cross Validation MSE in Competing Models&quot;, &quot;html&quot;) %&gt;% 
+  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;))</code></pre>
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<caption>
+Cross Validation MSE in Competing Models
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+PolynomialDegree
+</th>
+<th style="text-align:right;">
+Model 1
+</th>
+<th style="text-align:right;">
+Model 2
+</th>
+<th style="text-align:right;">
+Model 3
+</th>
+<th style="text-align:right;">
+Model 4
+</th>
+<th style="text-align:right;">
+Model 5
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+<td style="text-align:right;">
+1.09
+</td>
+<td style="text-align:right;">
+1.10
+</td>
+<td style="text-align:right;">
+0.89
+</td>
+<td style="text-align:right;">
+0.75
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2.68
+</td>
+<td style="text-align:right;">
+2.25
+</td>
+<td style="text-align:right;">
+1.42
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+2.40
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+8.43
+</td>
+<td style="text-align:right;">
+12.57
+</td>
+<td style="text-align:right;">
+2.66
+</td>
+<td style="text-align:right;">
+1.30
+</td>
+<td style="text-align:right;">
+10.11
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+36.28
+</td>
+<td style="text-align:right;">
+63.79
+</td>
+<td style="text-align:right;">
+4.04
+</td>
+<td style="text-align:right;">
+3.77
+</td>
+<td style="text-align:right;">
+70.96
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+31.62
+</td>
+<td style="text-align:right;">
+49.47
+</td>
+<td style="text-align:right;">
+21.01
+</td>
+<td style="text-align:right;">
+10.07
+</td>
+<td style="text-align:right;">
+28.56
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># 1
+glm.fit.1=glm(PriceRecievedFarmers~poly(1/USStockUse, 1) + poly(log(WorldStockUse), 1),data=stocks)
+
+# 2
+glm.fit.2=glm(PriceRecievedFarmers~poly(log(USStockUse), 2) + poly(log(WorldStockUse), 2),data=stocks)
+
+# 3
+glm.fit.3=glm(PriceRecievedFarmers~poly(1/USStockUse, 1) ,data=stocks)</code></pre>
+<p>Now to get a sense of whether or not these models are providing economically different predictions, we show predictions from the top three models in the table below.</p>
+<pre class="r"><code># 1
+glm.fit.1=glm(PriceRecievedFarmers~poly(1/USStockUse, 1) + poly(log(WorldStockUse), 1),data=stocks)
+
+# 2
+glm.fit.2=glm(PriceRecievedFarmers~poly(log(USStockUse), 2) + poly(log(WorldStockUse), 2),data=stocks)
+
+# 3
+glm.fit.3=glm(PriceRecievedFarmers~poly(1/USStockUse, 1) ,data=stocks)</code></pre>
+<table>
+<colgroup>
+<col width="18%"></col>
+<col width="46%"></col>
+<col width="34%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Rank</th>
+<th align="left">Specification</th>
+<th align="left">2017 Price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left"><span class="math inline">\(Price = \beta_0 + \beta_1 \frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} + \gamma_1 log(World \text{ } Stocks \text{ } to \text{ } Use) + \epsilon\)</span></td>
+<td align="left">3.06</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="left"><span class="math inline">\(Price = \beta_0 + \sum_{i=1}^2 \beta_i \Big(log(US \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \sum_{i=1}^2 \gamma_i \Big(log(World \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \epsilon\)</span></td>
+<td align="left">3.15</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="left"><span class="math inline">\(Price = \beta_0 + \beta_1 \frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} + \epsilon\)</span></td>
+<td align="left">2.77</td>
+</tr>
+</tbody>
+</table>
+<p>Currently, the March 2018 futures contract is trading at around $3.65, which is significantly higher than each of these predictions, but if you look back at the scatterplot of the actual data, $3.65 is well within the typical variability for a stocks to use value of 0.16 which is our current expectation for the 2017/18 marketing year.</p>
 </div>
 </div>
 

@@ -104,6 +104,7 @@ library(ggplot2)
 library(knitr)
 library(kableExtra)
 library(gridExtra)
+library(boot)
 stocks  <- read.csv('images/stocks.csv')
 stocks  <- as_tibble(stocks)
 stocks  <- mutate(stocks, USStockUse = USEndingStocks/USTotalUse, WorldStockUse = ROWEndingStocks/WorldTotalUse)
@@ -584,7 +585,171 @@ In a [farmdoc Daily article](http://farmdocdaily.illinois.edu/2015/04/relationsh
 
 $$Price = \alpha + \beta \frac{1}{Stocks \text{  } to \text{  } Use} + \epsilon,$$
 
-as a model for 'predicting' corn prices. In this example, we will see if we can find another functional form that performs better in terms of MSE, and we will use a 5-Fold cross validation to assess the models. Since World Stocks to Use might give additional predictive power, we will work it into some of our specifications. 
+as a model for 'predicting' corn prices. This certainly seems like a sensible choice, given that the shape of the relationship resembles $y = \frac{1}{x}$, but in this example, we will see if we can find another functional form that performs better in terms of cross validation MSE. We will also consider if the log of the stocks to use variable might fit, since this could also produce close to the correct curved shape (with a negative coeficient of course). I should note that in the farmdoc daily article, Good and Irwin use a much shorter sample that possibly reflects more closely current supply and demand dynamics better. But, in our case, we need the sample size to do the more data intensive cross validation. 
+
+We will use a 5-Fold cross validation to assess the models. Since World Stocks to Use might give additional predictive power, we will work it into some of our specifications. We will consider each of the following models with the polynomial degree from 1 to 5: 
+
+|Model         | Functional Form | 
+|:----------------------|:----------------------------------------------------------------------------------------|
+|Model 1       | $Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(\frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} \Big)^i + \epsilon$         |
+|Model 2       | $Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(\frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} \Big)^i + \sum_{i=1}^n \gamma_i \Big(\frac{1}{World \text{ } Stocks \text{ } to \text{ } Use} \Big)^i + \epsilon$         |
+|Model 3       | $Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(log(US \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \epsilon$         |
+|Model 4       | $Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(log(US \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \sum_{i=1}^n \gamma_i \Big(log(World \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \epsilon$         |
+|Model 5       | $Price = \beta_0 + \sum_{i=1}^n \beta_i \Big(\frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} \Big)^i + \sum_{i=1}^n \gamma_i \Big(log(World \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \epsilon$         |
+
+
+
+
+```r
+set.seed(17)
+cv.us=rep(0,5)
+cv.World=rep(0,5)
+cv.Lus=rep(0,5)
+cv.LWorld=rep(0,5)
+cv.World2=rep(0,5)
+for (i in 1:5){
+    glm.fit=glm(PriceRecievedFarmers~poly(1/USStockUse, i) ,data=stocks)
+    cv.us[i]=cv.glm(stocks,glm.fit,K=5)$delta[1]
+}
+
+for (i in 1:5){
+  glm.fit.World=glm(PriceRecievedFarmers~poly(1/USStockUse, i) + poly(1/WorldStockUse, i) ,data=stocks)
+  cv.World[i]=cv.glm(stocks,glm.fit.World,K=5)$delta[1]
+}
+
+for (i in 1:5){
+    glm.fit=glm(PriceRecievedFarmers~poly(log(USStockUse), i) ,data=stocks)
+    cv.Lus[i]=cv.glm(stocks,glm.fit,K=5)$delta[1]
+}
+
+for (i in 1:5){
+  glm.fit.World=glm(PriceRecievedFarmers~poly(log(USStockUse), i) + poly(log(WorldStockUse), i),data=stocks)
+  cv.LWorld[i]=cv.glm(stocks,glm.fit.World,K=5)$delta[1]
+}
+
+for (i in 1:5){
+  glm.fit.World=glm(PriceRecievedFarmers~poly(1/USStockUse, i) + poly(log(WorldStockUse), i),data=stocks)
+  cv.World2[i]=cv.glm(stocks,glm.fit.World,K=5)$delta[1]
+}
+
+res_tibble        <- cbind(cv.us, cv.World, cv.Lus, cv.LWorld, cv.World2) %>% as_tibble() %>% add_column(PolynomialDegree = seq(1:5)) %>% round(2)
+
+colnames(res_tibble) <- c('Model 1', 'Model 2', 'Model 3', 'Model 4', 'Model 5', 'PolynomialDegree')
+
+p1 <- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.us)) + geom_line() + ylim(0, 75) +  labs(x = 'Model 1 Poly Degree', y = 'Cross Validation MSE') + theme_bw()  
+p2 <- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.World)) + geom_line() + ylim(0, 75) + labs(x = 'Model 2 Poly Degree', y = '') + theme_bw()
+p3 <- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.Lus)) + geom_line() + ylim(0, 75) + labs(x = 'Model 3 Poly Degree', y = '') + theme_bw()
+p4 <- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.LWorld)) + geom_line() + ylim(0, 75) + labs(x = 'Model 4 Poly Degree', y = '') + theme_bw()
+p5 <- ggplot(res_tibble, aes(x = PolynomialDegree, y = cv.World2)) + geom_line() + ylim(0, 75) + labs(x = 'Model 5 Poly Degree', y = '') + theme_bw()
+grid.arrange(p1, p2, p3, p4, p5, nrow = 1, top = "Cross Validation MSE for Competing Models")
+```
+
+![](Machine-Learning-and-Econometrics-2018-02-19_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+The figure shows the cross validation MSE we get from each of the five models fit with polynomial degree 1:5. Remember, to get the cross validation MSE the `cv.glm()` function with `k = 5` is creating 5 different non-overlapping test and hold out samples. The MSE plotted in the figure is average of the MSE from each of the 5 different hold out samples. 
+
+In the table below we present the same information, the cross validation MSE by model type and for each polynomial degree. Since there were several models with very similar MSE we can see exactly which models are getting the minimum MSE. 
+
+Recall that Model 1 with a 1 degree polynomial is the model proposed by Good and Irwin in the farmdoc Daily article. This model does quite well, it comes in third, and the models that do better only do marginally better. The first place model is Model 5 with polynomial degree 1; the second place model is Model 4 with polynomial degree 2. 
+
+
+
+```r
+res_tibble[, c(6, 1:5)] %>% kable(caption = "Cross Validation MSE in Competing Models", "html") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<caption>Cross Validation MSE in Competing Models</caption>
+ <thead>
+  <tr>
+   <th style="text-align:right;"> PolynomialDegree </th>
+   <th style="text-align:right;"> Model 1 </th>
+   <th style="text-align:right;"> Model 2 </th>
+   <th style="text-align:right;"> Model 3 </th>
+   <th style="text-align:right;"> Model 4 </th>
+   <th style="text-align:right;"> Model 5 </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.86 </td>
+   <td style="text-align:right;"> 1.09 </td>
+   <td style="text-align:right;"> 1.10 </td>
+   <td style="text-align:right;"> 0.89 </td>
+   <td style="text-align:right;"> 0.75 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 2.68 </td>
+   <td style="text-align:right;"> 2.25 </td>
+   <td style="text-align:right;"> 1.42 </td>
+   <td style="text-align:right;"> 0.83 </td>
+   <td style="text-align:right;"> 2.40 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 8.43 </td>
+   <td style="text-align:right;"> 12.57 </td>
+   <td style="text-align:right;"> 2.66 </td>
+   <td style="text-align:right;"> 1.30 </td>
+   <td style="text-align:right;"> 10.11 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 36.28 </td>
+   <td style="text-align:right;"> 63.79 </td>
+   <td style="text-align:right;"> 4.04 </td>
+   <td style="text-align:right;"> 3.77 </td>
+   <td style="text-align:right;"> 70.96 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 31.62 </td>
+   <td style="text-align:right;"> 49.47 </td>
+   <td style="text-align:right;"> 21.01 </td>
+   <td style="text-align:right;"> 10.07 </td>
+   <td style="text-align:right;"> 28.56 </td>
+  </tr>
+</tbody>
+</table>
+
+```r
+# 1
+glm.fit.1=glm(PriceRecievedFarmers~poly(1/USStockUse, 1) + poly(log(WorldStockUse), 1),data=stocks)
+
+# 2
+glm.fit.2=glm(PriceRecievedFarmers~poly(log(USStockUse), 2) + poly(log(WorldStockUse), 2),data=stocks)
+
+# 3
+glm.fit.3=glm(PriceRecievedFarmers~poly(1/USStockUse, 1) ,data=stocks)
+```
+
+
+Now to get a sense of whether or not these models are providing economically different predictions, we show predictions from the top three models in the table below. 
+
+
+```r
+# 1
+glm.fit.1=glm(PriceRecievedFarmers~poly(1/USStockUse, 1) + poly(log(WorldStockUse), 1),data=stocks)
+
+# 2
+glm.fit.2=glm(PriceRecievedFarmers~poly(log(USStockUse), 2) + poly(log(WorldStockUse), 2),data=stocks)
+
+# 3
+glm.fit.3=glm(PriceRecievedFarmers~poly(1/USStockUse, 1) ,data=stocks)
+```
+
+|Rank                |  Specification                         | 2017 Price|
+|:----------------------|:-----------------------------------------------------------|:-------------------------------------------|
+| 1      |$Price = \beta_0 + \beta_1 \frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} + \gamma_1 log(World \text{ } Stocks \text{ } to \text{ } Use) + \epsilon$ |3.06  |
+| 2        | $Price = \beta_0 + \sum_{i=1}^2 \beta_i \Big(log(US \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \sum_{i=1}^2 \gamma_i \Big(log(World \text{ } Stocks \text{ } to \text{ } Use \Big)^i + \epsilon$   |3.15  |
+| 3        | $Price = \beta_0 + \beta_1 \frac{1}{US \text{ } Stocks \text{ } to \text{ } Use} + \epsilon$ | 2.77  |
+
+
+Currently, the March 2018 futures contract is trading at around \$3.65, which is significantly higher than each of these predictions, but if you look back at the scatterplot of the actual data, \$3.65 is well within the typical variability for a stocks to use value of 0.16 which is our current expectation for the 2017/18 marketing year. 
+
 
 
 
