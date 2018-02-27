@@ -1,0 +1,65 @@
+---
+title: "Machine Learning and Econometrics: Flexibilty versus Interpretability"
+output:
+  html_document:
+    keep_md: true
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = FALSE)
+
+```
+
+```{r}
+# If you haven't installed any of the packages listed below, do so with the "install.packages('tibble')" command. 
+library(tibble)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+library(quantmod)
+library(PerformanceAnalytics)
+library(randomForest)
+
+#SPY and Top 10 S&P 500 Companies by Market Cap (BRK.B replaced by #11 BAC, bc Berkshire wouldn't download. FB replaced by #12 WFC bc I want long sample and FB has only been trading since '12. Plus 4 of the biggest Spyder sector etfs.) XLF - Financials, XLK - Tech, XLE - Energy, XLY - Consumer Discretionary
+SP  <- c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY")
+getSymbols(SP)
+
+SP <- cbind(SPY$SPY.Adjusted, AAPL$AAPL.Adjusted, MSFT$MSFT.Adjusted, AMZN$AMZN.Adjusted, WFC$WFC.Adjusted, JPM$JPM.Adjusted, BAC$BAC.Adjusted, JNJ$JNJ.Adjusted, GOOG$GOOG.Adjusted, XOM$XOM.Adjusted, XLF$XLF.Adjusted, XLK$XLK.Adjusted, XLE$XLE.Adjusted, XLY$XLY.Adjusted)
+colnames(SP) <- c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY")
+```
+
+Calculate returns, create lags, and combine into one object, `SPRet`. 
+
+```{r}
+SPRet <- Return.calculate(SP, method = 'log')
+laggs.1 <- apply(SPRet, 2, Lag, 1)
+laggs.2 <- apply(SPRet, 2, Lag, 2)
+laggs.3 <- apply(SPRet, 2, Lag, 3)
+laggs.4 <- apply(SPRet, 2, Lag, 4)
+laggs.5 <- apply(SPRet, 2, Lag, 5)
+laggs.6 <- apply(SPRet, 2, Lag, 6)
+laggs.7 <- apply(SPRet, 2, Lag, 7)
+laggs.8 <- apply(SPRet, 2, Lag, 8)
+laggs.9 <- apply(SPRet, 2, Lag, 9)
+laggs.10 <- apply(SPRet, 2, Lag, 10)
+laggs   <- cbind(laggs.1, laggs.2, laggs.3, laggs.4, laggs.5, laggs.6, laggs.7, laggs.8, laggs.9, laggs.10)
+
+SPRet   <- cbind(SPRet, laggs)
+
+# Remove the concurrent returns. 
+SPRet   <- SPRet[, setdiff(colnames(SPRet), c("AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+```
+
+Fit random forest to predict SPY returns. 
+
+```{r}
+rf.SPRet  <- randomForest(SPY~., data = SPRet, )
+
+
+```
+
+
+
