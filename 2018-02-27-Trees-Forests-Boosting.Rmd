@@ -23,6 +23,7 @@ library(quantmod)
 library(PerformanceAnalytics)
 library(randomForest)
 library(gbm)
+library(forecast)
 
 #SPY and Top 10 S&P 500 Companies by Market Cap (BRK.B replaced by #11 BAC, bc Berkshire wouldn't download. FB replaced by #12 WFC bc I want long sample and FB has only been trading since '12. Plus 4 of the biggest Spyder sector etfs.) XLF - Financials, XLK - Tech, XLE - Energy, XLY - Consumer Discretionary
 SP  <- c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY")
@@ -58,7 +59,7 @@ Fit random forest to predict SPY returns.
 
 ```{r}
 # Random Forest
-train     <- sample(1:nrow(SPRet[12:dim(SPRet)[1]]), nrow(SPRet[12:dim(SPRet)[1]])/2)
+train     <- sample(12:nrow(SPRet[12:dim(SPRet)[1]]), nrow(SPRet[12:dim(SPRet)[1]])/2)
 rf.SPRet  <- randomForest(SPY~., data = SPRet[12:dim(SPRet)[1]], subset = train, mtry = 12, ntree = 50)
 yhat.rf   <- predict(rf.SPRet, newdata = SPRet[-train])
 
@@ -66,7 +67,7 @@ SPRet.test <- SPRet[-train, "SPY"]
 mean((yhat.rf - SPRet.test$SPY)^2, na.rm = TRUE)
 
 # Boosting
-boost.SPRet <- gbm(SPY~., data= SPRet[train], distribution = "gaussian", n.trees = 5000, interaction.depth = 4)
+boost.SPRet <- gbm(SPY~., data= SPRet[train], distribution = "gaussian", n.trees = 5000, interaction.depth = 4, shrinkage = 0)
 summary(boost.SPRet)
 yhat.boost <- predict(boost.SPRet, newdata = SPRet[-train,], n.trees = 5000)
 mean((yhat.boost - SPRet.test$SPY)^2, na.rm = TRUE)
@@ -75,6 +76,9 @@ mean((yhat.boost - SPRet.test$SPY)^2, na.rm = TRUE)
 lin.reg   <- lm(SPY ~., data = SPRet[12:dim(SPRet)[1]], subset = train)
 yhat.lin  <- predict(lin.reg, newdata = SPRet[-train])
 mean((yhat.lin - SPRet.test$SPY)^2, na.rm = TRUE)
+
+# ETS
+ets.forecast <- SPRet$SPY %>% ets %>% forecast
 ```
 
 Backtesting
@@ -82,9 +86,11 @@ Backtesting
 ```{r}
 yhat.rf   <- predict(rf.SPRet, newdata = SPRet)
 yhat.lin  <- predict(lin.reg, newdata = SPRet)
+yhat.boost  <- predict(boost.SPRet, newdata = SPRet, n.trees = 5000)
 
 indicator.rf  <- apply(as.matrix(Lag(yhat.rf)[13:length(yhat.rf)]), 1, function(x) if(x<0) (-1) else 1)
 indicator.lin  <- apply(as.matrix(Lag(yhat.lin)[13:length(yhat.rf)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.ets  <- apply(as.matrix(Lag(yhat.ets$fitted)[13:length(yhat.ets$fitted)]), 1, function(x) if(x<0) (-1) else 1)
 indicator.boost  <- apply(as.matrix(Lag(yhat.boost)[13:length(yhat.boost)]), 1, function(x) if(x<0) (-1) else 1)
 
 
@@ -105,6 +111,9 @@ plot((invest*cumprod(1+return.boost)))
 
 return.lin    <- SPRet$SPY[13:length(yhat.lin)]*indicator.lin
 plot(invest*cumprod(1+return.lin))
+
+return.ets    <- SPRet$SPY[13:length(yhat.ets$fitted)]*indicator.ets
+plot(invest*cumprod(1+return.ets))
 
 return.rfcons    <- SPRet$SPY[13:length(yhat.rf)]*indicator.rfcons
 plot((invest*cumprod(1+return.rfcons)))
