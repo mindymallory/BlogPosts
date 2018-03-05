@@ -1,17 +1,10 @@
----
-title: "Machine Learning and Econometrics: Trees, Random Forests, and Boosting"
-output:
-  html_document:
-    keep_md: true
----
+# Machine Learning and Econometrics: Trees, Random Forests, and Boosting
 
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = TRUE)
 
-```
 
-```{r}
+
+```r
 # If you haven't installed any of the packages listed below, do so with the "install.packages('tibble')" command. 
 library(tibble)
 library(tidyr)
@@ -26,14 +19,22 @@ library(broom)
 #SPY and Top 10 S&P 500 Companies by Market Cap (BRK.B replaced by #11 BAC, bc Berkshire wouldn't download. FB replaced by #12 WFC bc I want long sample and FB has only been trading since '12. Plus 4 of the biggest Spyder sector etfs.) XLF - Financials, XLK - Tech, XLE - Energy, XLY - Consumer Discretionary
 SP  <- c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY")
 getSymbols(SP)
+```
 
+```
+##  [1] "SPY"  "AAPL" "MSFT" "AMZN" "WFC"  "JPM"  "BAC"  "JNJ"  "GOOG" "XOM" 
+## [11] "XLF"  "XLK"  "XLE"  "XLY"
+```
+
+```r
 SP <- cbind(SPY$SPY.Adjusted, AAPL$AAPL.Adjusted, MSFT$MSFT.Adjusted, AMZN$AMZN.Adjusted, WFC$WFC.Adjusted, JPM$JPM.Adjusted, BAC$BAC.Adjusted, JNJ$JNJ.Adjusted, GOOG$GOOG.Adjusted, XOM$XOM.Adjusted, XLF$XLF.Adjusted, XLK$XLK.Adjusted, XLE$XLE.Adjusted, XLY$XLY.Adjusted)
 colnames(SP) <- c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY")
 ```
 
 Calculate returns, create lags, and combine into one object, `SPRet`. 
 
-```{r}
+
+```r
 SPRet <- Return.calculate(SP, method = 'log')
 laggs.1 <- apply(SPRet, 2, Lag, 1)
 laggs.2 <- apply(SPRet, 2, Lag, 2)
@@ -55,7 +56,8 @@ NAMES   <- c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", 
 
 Fit random forest to predict SPY returns. 
 
-```{r}
+
+```r
 #set.seed(15) #GOOD
 set.seed(12) #also good 
 train         <- sample(12:nrow(SPRet[12:dim(SPRet)[1]]), nrow(SPRet[12:dim(SPRet)[1]])/2)
@@ -172,13 +174,12 @@ return.Picker3[i, 1] <- indicator.picker[i]
 return.Picker1    <- xts(return.Picker1 , order.by = index(SPRtempFull["2007-01-22/"]))
 return.Picker2    <- xts(return.Picker2 , order.by = index(SPRtempFull["2007-01-22/"]))
 return.Picker3    <- xts(return.Picker3 , order.by = index(SPRtempFull["2007-01-22/"]))
-
-
 ```
 
 Backtesting
 
-```{r}
+
+```r
 invest         <- 10000
 
 DATA            <- cbind(invest*cumprod(1+SPRet$SPY[13:dim(SPRet)[1]]), invest*cumprod(1+return.Picker1), invest*cumprod(1+SPRet$AMZN[13:dim(SPRet)[1]]))
@@ -188,20 +189,29 @@ DATA            <- tidy(DATA)
 ```
 
 
-```{r}
+
+```r
 ggplot(DATA, aes(x = index, y = value, color = series)) + 
   geom_line() + 
   theme_bw() +
   labs(title = "Buy & Hold SPY vs Buy & Hold AMZN vs 'Boosting' Picker, $10K Invested", x = "")
 ```
 
-```{r}
+![](2018-02-27-Trees-Forests-Boosting_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+
+```r
 ggplot(return.Picker2, aes(x = V1)) + geom_bar() + theme_bw()
 ```
 
-```{r}
+![](2018-02-27-Trees-Forests-Boosting_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+
+```r
 ggplot(return.Picker3, aes(x = V1)) + geom_bar() + theme_bw()
 ```
+
+![](2018-02-27-Trees-Forests-Boosting_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
 
 
