@@ -7,9 +7,65 @@ output:
 
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = FALSE)
 
 ```
+
+
+*This is the third in a series of [posts](http://blog.mindymallory.com/2018/02/how-does-machine-learning-fit-into-agricultural-economics/) where I document my own process in figuring out how machine learning relates to the classic econometrics one learns in a graduate program in economics. Note that I am a humble practitioner of applied econometrics, so the ideas I am working through are not new, and my first take on them might not even be fully correct. But, I think many of us applied economists are starting to learn and dabble in this area and I thought it might be fruitful to community if I learn publicly in these blog posts. These posts are certainly going to solidify my own understanding and serve as helpful notes for my own purposes.* 
+
+In this post I summarize what I learned from Chapter 8 of [Introduction to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/data.html) (ISL). In my [last post](http://blog.mindymallory.com/2018/02/machine-learning-and-econometrics-model-selection-and-assessment-statistical-learning-style/) I covered cross validation from chapter 5. I am skipping chapters 6 (Linear Model Selection and Regularization) and 7 (Moving Beyond Linearity) partly because I have kind of seen some of that stuff before and partly because I need to move my learning along in order to get something prepared for the [SCC-76](https://www.agriskgroup.org/) meeting April 5-7th (Todd and Todd, I hope you aren't getting nervous yet!). 
+
+I'm really excited to write up this post because it covers something that I truely know zero about, and feels like 'real' machine learning. Tree-Based Methods! I'll breifly describe regression trees, bagging, random forests, and boosting. 
+
+# Regression Trees
+
+Regression trees take a fundamentally different approach to prediction than pretty much any kind of regression you will find in an econometrics class. In an econometrics class, you try to find the best function (often linear) that will predict the data. Specifically, you find $\hat{f}(x)$ to predict values of $y$ often by minimising a quadrdic loss function that looks something like the following:
+
+$$\sum_{i=1}^n (y_i - \hat{f}(x))^2$$
+
+So finding a functional form that minimizes the quantity above, usually referred to as the residual sum of squares (RSS), is the name of the game. If you further assume that the funcitonal form is linear, then you just need to find the coeficients ($\beta$'s in most notation) and you end up with ordinary least squares estimates. 
+
+In a regression tree, you literally just find the cutpoints in the prediction variables that split your sample in a way that gives the best possible prediction. This is really illustrated best with an example. I'll piggyback on the examply given in ISL. They use a database of professional baseball players' salary. The database includes variables for years in the league and number of hits. The figure below is from ISL and it displays the result of fitting a regression tree to this data to predict the log of players' salary. The first step is to determine which predictor has the best predictive power. Since we see years in the first split of the tree, it must be that splitting years at 4.5 years resulted in the best prediction compared to any other split in the years variable, and compared to splitting with hits first instead.  
+
+In the second step, there are two leaves that may be split further, or the tree may stop splitting if there are less than a threshold number of observations in that bin. So for observations with years less than 4.5 years, you get your salary prediction by averaging the salary of all players who have been in the league less than 4.5 years. This average is 5.11 (logged salary...). 
+
+On the other branch, for observations where year is greater than 4.5 years, there are more observations and we can split the sample based on the next best predicting variable. In this case, it is hits. So the algorithm searching for a split in the hits variable for observations that have years greater than 4.5 and it finds the best predicted salary comes from splitting hits at 117.5. 
+
+
+![Figure 8.1 from ISL](images\8.1-ISLR.jpg)
+
+*This figure is taken from "An Introduction to Statistical Learning, with applications in R" (Springer, 2013) with permission from the authors: G. James, D. Witten,  T. Hastie and R. Tibshirani*
+
+That is it. It is pretty simple conceptually. The book discusses techniques to prevent overfitting, specifically 'pruning' the tree. But I'll leave that for interested readers to explore themselves. However, a simple regression tree as I described above can be influenced highly be slight changes or additions to the dataset, making the predictions not very robust. 
+
+The methods of bagging and random forests attempt to stabalize the results. I find the approach to be pretty intuitive. 
+
+# Bagging 
+
+It turns out, bagging stands for 'boostrapped aggregation'. Once you know that, and if you have ever used a boostrap, you might be able to guess what bagging is. The idea is that you can create more robust preductions by bootstrapping a bunch of sub-samples, fitting a regression tree to each sub-sample, and then averaging the predictions across the bootstrapped sample. By boostrapping and then aggregating, you will greatly reduce the variance in your predictions as you update your sample to include new data. Then you would test your predictions on a hold out sample that was never drawn from for any of the bootstrap samples. This is called 'out of bag' prediction. There must be a funny dad joke in there. That is left as an exercise to the reader (that part is a professor joke).
+
+Cool. Very simple idea. 
+
+
+# Random Forests
+
+Bagging will improve accuracy and robustness of predictions, however random forests and improve further. Bagging can be improved upon because if one of your variables is a pretty good predictor, than it will probably be a pretty good predictor in most of your boostrap samples. That will lead it to appear higher in the regression tree, and the split will probably be pretty similar across boostrapped samples too. That means the predictions accross boostrapped samples within the bag will be pretty correlated and you are not getting as much bang for your buck from the boostrapped samples as you would hope. 
+
+A random forest solves this problem by randomly choosing a subset of the predictors as candidates for the split. At each split and new subset of potential predictors is chosen. This restriction de-correlates the trees in the bagging process. The intuition is easiest to follow if you think about the best predictor. The best predictor will end up being the predictor that is split first in most of the bagged regression trees. However, in a random forest, some of those trees do not allow the best predictor to be used in the first split. Hence, the tree will be different then the highly correlated trees from the bagged sample. Counterintuitively, by handicapping the boostrapped trees this way you usually reduce the mean square error of the predictions. 
+
+# Boosting
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 # If you haven't installed any of the packages listed below, do so with the "install.packages('tibble')" command. 
@@ -57,7 +113,7 @@ Fit random forest to predict SPY returns.
 
 ```{r}
 #set.seed(15) #GOOD
-set.seed(12) #also good 
+#set.seed(12) #also good 
 train         <- sample(12:nrow(SPRet[12:dim(SPRet)[1]]), nrow(SPRet[12:dim(SPRet)[1]])/2)
 temp          <- SPRet[train]
 ntrees        <- 1000
