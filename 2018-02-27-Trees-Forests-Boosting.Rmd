@@ -114,96 +114,100 @@ Fit random forest to predict SPY returns.
 ```{r}
 #set.seed(15) #GOOD
 #set.seed(12) #also good 
-train         <- sample(12:nrow(SPRet[12:dim(SPRet)[1]]), nrow(SPRet[12:dim(SPRet)[1]])/2)
-temp          <- SPRet[train]
+#train         <- sample(12:nrow(SPRet[12:dim(SPRet)[1]]), nrow(SPRet[12:dim(SPRet)[1]])/1.5)
+#temp          <- SPRet[train]
+
+temp          <- SPRet[12:2110,]
+testing       <- SPRet[2110:(dim(SPRet)[1]),]
 ntrees        <- 1000
+depth         <- 1
 
 # SPY
 SPRtemp       <- temp[, setdiff(colnames(SPRet), c("AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
 boost.SPY     <- gbm(SPY~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.SPY      <- predict(boost.SPY, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull   <- SPRet[, setdiff(colnames(SPRet), c("AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+yhat.SPY      <- predict(boost.SPY, newdata = testing, n.trees = ntrees)
+SPRtempFull   <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.SPY      <- predict(boost.SPY, newdata = SPRtempFull, n.trees = ntrees)
-indicator.SPY <- apply(as.matrix(Lag(yhat.SPY)[13:length(yhat.SPY)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.SPY <- apply(as.matrix(Lag(yhat.SPY)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
 
 # AAPL
 SPRtemp       <- temp[, setdiff(colnames(SPRet), c("SPY", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
-boost.AAPL     <- gbm(AAPL~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.AAPL      <- predict(boost.AAPL, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull    <- SPRet[, setdiff(colnames(SPRet), c("SPY", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+boost.AAPL     <- gbm(AAPL~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = depth, shrinkage = .001)
+yhat.AAPL      <- predict(boost.AAPL, newdata = testing, n.trees = ntrees)
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("SPY", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.AAPL      <- predict(boost.AAPL, newdata = SPRtempFull, n.trees = ntrees)
-indicator.AAPL <- apply(as.matrix(Lag(yhat.AAPL)[13:length(yhat.AAPL)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.AAPL <- apply(as.matrix(Lag(yhat.AAPL)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
 # MSFT
 SPRtemp        <- temp[, setdiff(colnames(SPRet), c("SPY", "AAPL", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
-boost.MSFT     <- gbm(MSFT~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.MSFT      <- predict(boost.MSFT, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull    <- SPRet[, setdiff(colnames(SPRet), c("SPY", "AAPL", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+boost.MSFT     <- gbm(MSFT~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = depth, shrinkage = .001)
+yhat.MSFT      <- predict(boost.MSFT, newdata = testing, n.trees = ntrees)
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("SPY", "AAPL", "AMZN", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.MSFT      <- predict(boost.MSFT, newdata = SPRtempFull, n.trees = ntrees)
-indicator.MSFT <- apply(as.matrix(Lag(yhat.MSFT)[13:length(yhat.MSFT)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.MSFT <- apply(as.matrix(Lag(yhat.MSFT)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
 # AMZN
 SPRtemp        <- temp[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
-boost.AMZN     <- gbm(AMZN~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.AMZN      <- predict(boost.AMZN, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull    <- SPRet[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+boost.AMZN     <- gbm(AMZN~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = depth, shrinkage = .001)
+yhat.AMZN      <- predict(boost.AMZN, newdata = testing, n.trees = ntrees)
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "WFC", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.AMZN      <- predict(boost.AMZN, newdata = SPRtempFull, n.trees = ntrees)
-indicator.AMZN <- apply(as.matrix(Lag(yhat.AMZN)[13:length(yhat.AMZN)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.AMZN <- apply(as.matrix(Lag(yhat.AMZN)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
 # WFC
 SPRtemp        <- temp[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
-boost.WFC     <- gbm(WFC~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.WFC      <- predict(boost.WFC, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull    <- SPRet[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+boost.WFC     <- gbm(WFC~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = depth, shrinkage = .001)
+yhat.WFC      <- predict(boost.WFC, newdata = testing, n.trees = ntrees)
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "JPM", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.WFC      <- predict(boost.WFC, newdata = SPRtempFull, n.trees = ntrees)
-indicator.WFC <- apply(as.matrix(Lag(yhat.WFC)[13:length(yhat.WFC)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.WFC <- apply(as.matrix(Lag(yhat.WFC)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
 # JPM
 SPRtemp        <- temp[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
-boost.JPM     <- gbm(JPM~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.JPM      <- predict(boost.JPM, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull    <- SPRet[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+boost.JPM     <- gbm(JPM~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = depth, shrinkage = .001)
+yhat.JPM      <- predict(boost.JPM, newdata = testing, n.trees = ntrees)
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "BAC", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.JPM      <- predict(boost.JPM, newdata = SPRtempFull, n.trees = ntrees)
-indicator.JPM <- apply(as.matrix(Lag(yhat.JPM)[13:length(yhat.JPM)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.JPM <- apply(as.matrix(Lag(yhat.JPM)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
 # BAC
 SPRtemp        <- temp[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
-boost.BAC     <- gbm(BAC~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.BAC      <- predict(boost.BAC, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull    <- SPRet[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+boost.BAC     <- gbm(BAC~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = depth, shrinkage = .001)
+yhat.BAC      <- predict(boost.BAC, newdata = testing, n.trees = ntrees)
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "JNJ", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.BAC      <- predict(boost.BAC, newdata = SPRtempFull, n.trees = ntrees)
-indicator.BAC <- apply(as.matrix(Lag(yhat.BAC)[13:length(yhat.BAC)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.BAC <- apply(as.matrix(Lag(yhat.BAC)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
 # JNJ
 SPRtemp        <- temp[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
-boost.JNJ     <- gbm(JNJ~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.JNJ      <- predict(boost.JNJ, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull    <- SPRet[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+boost.JNJ     <- gbm(JNJ~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = depth, shrinkage = .001)
+yhat.JNJ      <- predict(boost.JNJ, newdata = testing, n.trees = ntrees)
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "GOOG", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.JNJ      <- predict(boost.JNJ, newdata = SPRtempFull, n.trees = ntrees)
-indicator.JNJ <- apply(as.matrix(Lag(yhat.JNJ)[13:length(yhat.JNJ)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.JNJ <- apply(as.matrix(Lag(yhat.JNJ)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
 # GOOG
 SPRtemp        <- temp[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 
-boost.GOOG     <- gbm(GOOG~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = 4, shrinkage = .001)
-yhat.GOOG      <- predict(boost.GOOG, newdata = SPRet[-train,], n.trees = ntrees)
-SPRtempFull    <- SPRet[, setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "XOM", "XLF", "XLK", "XLE", "XLY"))]
+boost.GOOG     <- gbm(GOOG~., data= SPRtemp, distribution = "gaussian", n.trees = ntrees, interaction.depth = depth, shrinkage = .001)
+yhat.GOOG      <- predict(boost.GOOG, newdata = testing, n.trees = ntrees)
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]), setdiff(colnames(SPRet), c("SPY", "AAPL", "MSFT", "AMZN", "WFC", "JPM", "BAC", "JNJ", "XOM", "XLF", "XLK", "XLE", "XLY"))]
 yhat.GOOG      <- predict(boost.GOOG, newdata = SPRtempFull, n.trees = ntrees)
-indicator.GOOG <- apply(as.matrix(Lag(yhat.GOOG)[13:length(yhat.GOOG)]), 1, function(x) if(x<0) (-1) else 1)
+indicator.GOOG <- apply(as.matrix(Lag(yhat.GOOG)[2:dim(Lag(yhat.SPY))]), 1, function(x) if(x<0) (-1) else 1)
 
+SPRtempFull    <- SPRet[2110:(dim(SPRet)[1]),]
 
 # Picking Stock with highest absolute value of predicted return. 
-all            <- as.data.frame(cbind(yhat.SPY, yhat.AAPL, yhat.AMZN, yhat.MSFT, yhat.WFC, yhat.JPM, yhat.BAC, yhat.JNJ, yhat.GOOG))[13:length(yhat.AMZN),]
-
+all            <- as.data.frame(cbind(yhat.SPY, yhat.AAPL, yhat.AMZN, yhat.MSFT, yhat.WFC, yhat.JPM, yhat.BAC, yhat.JNJ, yhat.GOOG))
 colnames(all)  <- c("SPY", "AAPL", "AMZN", "MSFT", "WFC", "JPM", "BAC", "JNJ", "GOOG")
 
 Temp           <- apply(abs(all), 1, which.max)
@@ -221,13 +225,13 @@ return.Picker2  <- data.frame(stringsAsFactors = FALSE)
 return.Picker3  <- data.frame(stringsAsFactors = FALSE)
 
 for (i in 1:length(Temp)){
-return.Picker1[i, 1] <- SPRet[i+12, Temp[i]]
+return.Picker1[i, 1] <- SPRtempFull[i, Temp[i]]
 return.Picker2[i, 1] <- colnames(all)[Temp[i]]
 return.Picker3[i, 1] <- indicator.picker[i]
 }
-return.Picker1    <- xts(return.Picker1 , order.by = index(SPRtempFull["2007-01-22/"]))
-return.Picker2    <- xts(return.Picker2 , order.by = index(SPRtempFull["2007-01-22/"]))
-return.Picker3    <- xts(return.Picker3 , order.by = index(SPRtempFull["2007-01-22/"]))
+return.Picker1    <- xts(return.Picker1 , order.by = index(SPRtempFull))
+return.Picker2    <- xts(return.Picker2 , order.by = index(SPRtempFull))
+return.Picker3    <- xts(return.Picker3 , order.by = index(SPRtempFull))
 
 
 ```
@@ -237,18 +241,21 @@ Backtesting
 ```{r}
 invest         <- 10000
 
-DATA            <- cbind(invest*cumprod(1+SPRet$SPY[13:dim(SPRet)[1]]), invest*cumprod(1+return.Picker1), invest*cumprod(1+SPRet$AMZN[13:dim(SPRet)[1]]))
-colnames(DATA)  <- c('SPY', "Picker", "AMZN") 
+DATA            <- cbind(invest*cumprod(1+SPRtempFull$SPY), invest*cumprod(1+return.Picker1), invest*cumprod(1+SPRtempFull$AMZN), invest*cumprod(1+SPRtempFull$AAPL))
+colnames(DATA)  <- c('SPY', "Picker", "AMZN", "AAPL") 
 
 DATA            <- tidy(DATA)
 ```
+
+
+Picks AAPL as its darling. Would do better if it was recursivly rolling. Then as AMZN took off it would switch. However, then it is really just trend following...so you don't get much for the sophistication. Plus the lookback bias of knowing the 2018 top 10 market cap. 
 
 
 ```{r}
 ggplot(DATA, aes(x = index, y = value, color = series)) + 
   geom_line() + 
   theme_bw() +
-  labs(title = "Buy & Hold SPY vs Buy & Hold AMZN vs 'Boosting' Picker, $10K Invested", x = "")
+  labs(title = "Buy & Hold SPY, AAPL, AMZN vs 'Boosting' Picker, $10K Invested", x = "")
 ```
 
 ```{r}
