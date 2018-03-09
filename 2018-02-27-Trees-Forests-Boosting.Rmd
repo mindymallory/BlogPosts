@@ -57,9 +57,20 @@ A random forest solves this problem by randomly choosing a subset of the predict
 # Boosting
 
 
+So, as we learned, random forests are a natural extention of bagging, and both are built on taking bootstrapped samples and applying a regression tree to each sample. Boosting is different, in that a boosted regression tree is built off of one test sample, and the trees are built sequentially. It took me a bit more to understand the basic idea of boosting. But what happens is this:
+
+1. Define the test sample
+2. Fit a regression tree with depth d = the number of splits, and shrinkage parameter chosen (see [chapter 6](http://www-bcf.usc.edu/~gareth/ISL/ISLR%20Seventh%20Printing.pdf). shrinkage parameter as in a ridge or lasso regression) 
+3. Calculate residuals from the actual and predicted values 
+4. Fit a regression tree to the residuals obtained in step 3
+5. Repeat 3 and 4 until the desired number of trees has been fitted
+
+
+Since the sequential trees improve on the residuals of the previous steps, the model is said to 'learn slowly', which generally achieves a better fit. 
 
 
 
+# A Forecasting Example
 
 
 
