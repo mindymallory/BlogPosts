@@ -1,0 +1,49 @@
+---
+title: "Weekly Exports of Corn, Soybeans, and Wheat during the 2018 Trade War with China?!?"
+output:
+  html_document:
+    keep_md: true
+---
+
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = FALSE)
+
+```
+
+
+```{r}
+library(tidyverse)
+library(epitools)
+DATA_2018 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2018.csv")
+DATA_2017 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2017.csv")
+DATA_2016 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2016.csv")
+DATA_2015 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2015.csv")
+DATA_2014 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2014.csv")
+DATA_2013 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2013.csv")
+
+DATA      <- rbind(DATA_2013, DATA_2014, DATA_2015, DATA_2016, DATA_2017, DATA_2018)
+DATA      <- DATA %>% select(Thursday, Grain, Pounds, Destination, MKT.YR) %>%
+                   separate(col = 'Thursday', sep = c(4, 6), into = c('Year', 'Month', 'Day'), remove = TRUE, convert = FALSE) %>%
+                   unite(col = 'Date', Year, Month, Day, sep = '-', remove = FALSE)
+DATA$Date <- as.Date(DATA$Date)
+
+
+
+
+
+
+
+```
+
+
+```{r}
+# For soybeans
+
+# 2013
+filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1314') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2012-09-01', units = "weeks"))) %>%
+
+
+
+```
