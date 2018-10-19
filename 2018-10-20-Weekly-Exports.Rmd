@@ -26,7 +26,9 @@ DATA      <- rbind(DATA_2013, DATA_2014, DATA_2015, DATA_2016, DATA_2017, DATA_2
 DATA      <- DATA %>% select(Thursday, Grain, Pounds, Destination, MKT.YR) %>%
                    separate(col = 'Thursday', sep = c(4, 6), into = c('Year', 'Month', 'Day'), remove = TRUE, convert = FALSE) %>%
                    unite(col = 'Date', Year, Month, Day, sep = '-', remove = FALSE)
+
 DATA$Date <- as.Date(DATA$Date)
+DATA$Pounds <- DATA$Pounds/56/1000000
 
 
 
@@ -42,7 +44,10 @@ DATA$Date <- as.Date(DATA$Date)
 
 # 2013
 filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1314') %>% 
-  mutate(MkYrWk = floor(difftime(Date, '2012-09-01', units = "weeks"))) %>%
+  mutate(MkYrWk = floor(difftime(Date, '2013-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
 
 
 
