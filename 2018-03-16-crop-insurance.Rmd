@@ -1,0 +1,69 @@
+---
+title: "Crop Insurance Washington Post"
+output: html_document
+---
+
+Tamar Haspel has an [article](https://www.washingtonpost.com/lifestyle/food/why-do-taxpayers-subsidize-rich-farmers/2018/03/15/50e89906-27b6-11e8-b79d-f3d931db7f68_story.html?utm_term=.9e717a54274a) in yesterday's Washington Post titled, "Why do taxpayers subsidize rich farmers?"
+
+The article is a take on the USDA's recent report ["The Evolving Distribution of Payments From Commodity, Conservation, and Federal Crop Insurance Programs""](https://www.ers.usda.gov/publications/pub-details/?pubid=85833), by McFadden and Hoppe that looks at subsidies on crop insurance premiums by farmer income, rather than farms by number of acres. 
+
+Haspel highlights one of the reports findings: 
+
+>Subsidy reduction is an outlier of an idea in Washington because it has what almost nothing does these days — support from the right and left. On the right, groups like the Heritage Foundation and the Cato Institute are finding common ground with left-leaning groups like the Environmental Working Group. Even the Congressional Budget Office, which generally avoids policy prescriptions, has issued a report on how to reduce the costs of crop insurance.
+>
+>Read that report, and you get a sense of how complicated subsidies are. But step back from the complexities, and I think there’s a very simple idea at play here: Most Americans balk at giving hard-earned taxpayer dollars to people who make many times what most Americans do.
+
+The main idea being, how can we justify giving the largest subsidies to the 'richest' farmers?
+
+This sentiment masks two key elements that explain how we got to this point, and why we (meaning the U.S. as a society) might prefer this policy to others we have tried before. 
+
+## Policy Goal: Moderate subsidy payments every year rather than periodic, unpredictable disaster payments. 
+As is happens, Carl Zulauf, Gary Schnitkey, Jonathan Coppess, and Nick Paulson have a [farmdocDaily](http://farmdocdaily.illinois.edu) [article](http://farmdocdaily.illinois.edu/2018/03/premium-subsidy-and-insured-us-acres.html) out yesterday that eludes to this. 
+
+>Cost of Federal Crop Insurance is an on-going farm policy issue. President Trump proposed several changes to reduce its cost in his Fiscal Year 2019 budget. The changes include reducing the all insurance program subsidy from the 62% rate of recent years to 48%. A long standing goal of crop insurance is to insure a large share of acres to reduce demand for ad hoc disaster assistance. Reducing the subsidy rate may reduce share of acres insured and thus conflict with this policy goal.
+
+Before we had a large crop insurance program, we had various means of price supports. Sometimes these did not actually protect against large negative swings in farmer income, and the government would routinely - but at randomly - find itself needing to provide large disaster payments to prevent large numbers of farm bankruptcies in the event of severely low prices or yields. 
+
+This practice is impossible to budget for because the timing and size of any needed disaster relief is impossible to predict. So as a matter of policy, we have moved toward a subsidized crop insurance program. The federal government subsidizes crop insurance premiums and lets private insurance companies handle the indemnity payments. This is good from a budgeting standpoint, at least the federal expenditure is pretty stable in this scheme. Notice the green line in figure 3 of the ERS report. It is much less variable than the indemnities line in dashed red. 
+
+![](images\indemnities-ers.png)
+
+Source: [McFaddan and Hoppe ERS Report](https://www.ers.usda.gov/webdocs/publications/85834/eib-184.pdf?v=43068)
+
+## Why are subsidies needed? 
+
+So the natural next question is why do we need a subsidy? Why can't farmers just buy insurance without a subsidy?
+
+The short answer is because farmers won't buy it if premiums are not subsidized. Figure 4 from the Zulauf et al. farmdocDaily article illustrates this. 
+
+![](images\acre-farmdoc.png) 
+
+Source: [Zulauf et al. farmdocDaily](http://farmdocdaily.illinois.edu/2018/03/premium-subsidy-and-insured-us-acres.html)
+
+This figure in and of itself is evidence that farmers are at best risk-neutral, and maybe risk-loving. Then you may ask. Why do we subsidies a product that farmers don't want to pay market rate for?
+
+The answer to this goes back to the first point. The crop insurance program comes from a place of wanting stable federal expenditures (subsidies for crop insurance premiums) rather than unpredictable large disaster payments. 
+
+And when disaster comes, historical experience has been that there is no political appetite to just let large swaths of farmers go bankrupt due to unpredictable events like weather. 
+
+# So what about the subsidies going to the richest farmers?
+
+This is almost inevitable if you understand the goal to be getting acres into the program. If you don't get acres into the program, the federal government may have to make large disaster payments. Who are the 'rich' farmers? They are the ones with the most acres. When times are good, as it was during much of the sample period in the ers report, farmers with the most acres are 'richest'.
+
+There is a flip side to this though. In bad times, these same farmers are the 'poorest'. Figure 4 from the ERS report illustrates. 
+
+![](images\farmincome-ers.png)
+
+Source: [McFaddan and Hoppe ERS Report](https://www.ers.usda.gov/webdocs/publications/85834/eib-184.pdf?v=43068)
+
+The dashed green line is hypothetical farm at the median income level. At the median you notice incomes in good times have been as high as $200k per year, and in bad times have been as low as -\$50k per year during the sample. And these income figures are including crop insurance smoothing incomes![^insurance] Now the income swings of the 'richest' farmers would be much greater, even with crop insurance, as the ERS report mentions. I have not seen the underlying data, but I would guess for large farmers (the 'rich' in Haspel's article) the extremes would be several multiples of those shown for the median, even including crop insurance payments. 
+
+[^insurance]: I cannot be certain from the report, but I am pretty sure income in this figure includes indemnity payments. Otherwise, incomes in 2012 would have been very negative due to the drought. 
+
+## References 
+
+McFadden, Jonathan R. and Robert A. Hoppe. [Evolving Distribution of Payments From Commodity, Conservation, and Federal Crop Insurance Programs](https://www.ers.usda.gov/webdocs/publications/85834/eib-184.pdf?v=43068), EIB-184, U.S. Department of Agriculture, Economic Research Service, November 2017.
+
+Zulauf, C., G. Schnitkey, J. Coppess, and N. Paulson. ["Premium Subsidy and Insured U.S. Acres."](http://farmdocdaily.illinois.edu/2018/03/premium-subsidy-and-insured-us-acres.html) farmdoc daily (8):46, Department of Agricultural and Consumer Economics, University of Illinois at Urbana-Champaign, March 15, 2018.
+
+
