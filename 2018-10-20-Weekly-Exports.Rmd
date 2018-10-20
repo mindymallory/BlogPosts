@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = TRU
 
 ```
 
-
+All eyes are on export sales and shipments of soybeans in the midst of the 2018 trade war. I always have my price analysis students 
 
 
 Get the data from USDA FGIS.
