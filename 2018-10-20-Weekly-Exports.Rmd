@@ -1,20 +1,21 @@
 ---
-title: "Weekly Exports of Corn, Soybeans, and Wheat during the 2018 Trade War with China?!?"
-output:
-  html_document:
-    keep_md: true
+title: "Weekly Exports of Corn, Soybeans, and Wheat during the 2018 Trade War with China"
+output: html_document
 ---
 
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cache = TRUE)
 
 ```
 
 
+
+
+Get the data from USDA FGIS.
 ```{r}
 library(tidyverse)
-library(epitools)
+
 DATA_2018 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2018.csv")
 DATA_2017 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2017.csv")
 DATA_2016 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2016.csv")
@@ -28,13 +29,7 @@ DATA      <- DATA %>% select(Thursday, Grain, Pounds, Destination, MKT.YR) %>%
                    unite(col = 'Date', Year, Month, Day, sep = '-', remove = FALSE)
 
 DATA$Date <- as.Date(DATA$Date)
-DATA$Pounds <- DATA$Pounds/56/1000000
-
-
-
-
-
-
+DATA$Pounds <- DATA$Pounds/56/1000000  # Converts lbs to million bu
 
 ```
 
@@ -43,11 +38,209 @@ DATA$Pounds <- DATA$Pounds/56/1000000
 # For soybeans
 
 # 2013
-filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1314') %>% 
+soy_13 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1314') %>% 
   mutate(MkYrWk = floor(difftime(Date, '2013-09-01', units = "weeks"))) %>%
   group_by(MkYrWk) %>%
   summarize(WkTotal = sum(Pounds)) %>%
   mutate(WkCumSum = cumsum(WkTotal))
+
+soy_13$Year <- '2013'
+
+# 2014
+soy_14 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1415') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2014-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_14$Year <- '2014'
+
+# 2015
+soy_15 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1516') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2015-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_15$Year <- '2015'
+
+# 2016
+soy_16 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1617') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2016-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_16$Year <- '2016'
+
+# 2017
+soy_17 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1718') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2017-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_17$Year <- '2017'
+
+# 2018
+soy_18 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1819') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2018-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_18$Year <- '2018'
+
+soy <- rbind(soy_13, soy_14, soy_15, soy_16, soy_17, soy_18)
+
+soy$MkYrWk <- as.numeric(soy$MkYrWk)
+soy$Year  <- as.factor(soy$Year)
+
+ggplot(soy, aes(x = MkYrWk, y = WkCumSum, color = Year)) + 
+  geom_line(size = 1) + 
+  theme_bw() + 
+  labs(title = "GIPSA Weekly Export Shipments of Soybeans, 2013-2018 Marketing Years", x = 'Marketing Year Week Number', y = 'Million Bushels')
+```
+
+
+```{r}
+# For Corn
+
+# 2013
+corn_13 <- filter(DATA, Grain == "CORN" & MKT.YR == '1314') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2013-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+corn_13$Year <- '2013'
+
+# 2014
+corn_14 <- filter(DATA, Grain == "CORN" & MKT.YR == '1415') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2014-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+corn_14$Year <- '2014'
+
+# 2015
+corn_15 <- filter(DATA, Grain == "CORN" & MKT.YR == '1516') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2015-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+corn_15$Year <- '2015'
+
+# 2016
+corn_16 <- filter(DATA, Grain == "CORN" & MKT.YR == '1617') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2016-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+corn_16$Year <- '2016'
+
+# 2017
+corn_17 <- filter(DATA, Grain == "CORN" & MKT.YR == '1718') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2017-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+corn_17$Year <- '2017'
+
+# 2018
+corn_18 <- filter(DATA, Grain == "CORN" & MKT.YR == '1819') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2018-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+corn_18$Year <- '2018'
+
+corn <- rbind(corn_13, corn_14, corn_15, corn_16, corn_17, corn_18)
+
+corn$MkYrWk <- as.numeric(corn$MkYrWk)
+corn$Year  <- as.factor(corn$Year)
+
+ggplot(corn, aes(x = MkYrWk, y = WkCumSum, color = Year)) + 
+  geom_line(size = 1) + 
+  theme_bw() + 
+  labs(title = "GIPSA Weekly Export Shipments of CORN, 2013-2018 Marketing Years", x = 'Marketing Year Week Number', y = 'Million Bushels')
+```
+
+```{r}
+# For wheat
+
+# 2013
+wheat_13 <- filter(DATA, Grain == "WHEAT" & MKT.YR == '1314') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2013-07-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+wheat_13$Year <- '2013'
+
+# 2014
+wheat_14 <- filter(DATA, Grain == "WHEAT" & MKT.YR == '1415') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2014-07-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+wheat_14$Year <- '2014'
+
+# 2015
+wheat_15 <- filter(DATA, Grain == "WHEAT" & MKT.YR == '1516') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2015-07-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+wheat_15$Year <- '2015'
+
+# 2016
+wheat_16 <- filter(DATA, Grain == "WHEAT" & MKT.YR == '1617') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2016-07-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+wheat_16$Year <- '2016'
+
+# 2017
+wheat_17 <- filter(DATA, Grain == "WHEAT" & MKT.YR == '1718') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2017-07-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+wheat_17$Year <- '2017'
+
+# 2018
+wheat_18 <- filter(DATA, Grain == "WHEAT" & MKT.YR == '1819') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2018-07-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+wheat_18$Year <- '2018'
+
+wheat <- rbind(wheat_13, wheat_14, wheat_15, wheat_16, wheat_17, wheat_18)
+
+wheat$MkYrWk <- as.numeric(wheat$MkYrWk)
+wheat$Year  <- as.factor(wheat$Year)
+
+ggplot(wheat, aes(x = MkYrWk, y = WkCumSum, color = Year)) + 
+  geom_line(size = 1) + 
+  theme_bw() + 
+  labs(title = "GIPSA Weekly Export Shipments of Wheat, 2013-2018 Marketing Years", x = 'Marketing Year Week Number', y = 'Million Bushels')
+```
+
+```{r}
+
 
 
 
