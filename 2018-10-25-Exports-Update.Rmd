@@ -1,0 +1,350 @@
+---
+title: "Update: Weekly Exports of Soybeans"
+output: html_document
+---
+
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, cache = TRUE)
+
+```
+
+```{r}
+
+library(tidyverse)
+library(ggpubr)
+library(knitr)
+library(kableExtra)
+
+# Get the data from GIPSA
+DATA_2018 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2018.csv")
+DATA_2017 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2017.csv")
+DATA_2016 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2016.csv")
+DATA_2015 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2015.csv")
+DATA_2014 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2014.csv")
+DATA_2013 <- read.csv(file = "https://fgisonline.ams.usda.gov/ExportGrainReport/CY2013.csv")
+
+DATA      <- rbind(DATA_2013, DATA_2014, DATA_2015, DATA_2016, DATA_2017, DATA_2018)
+DATA      <- DATA %>% select(Thursday, Grain, Pounds, Destination, MKT.YR) %>%
+  separate(col = 'Thursday', sep = c(4, 6), into = c('Year', 'Month', 'Day'), remove = TRUE, convert = FALSE) %>%
+  unite(col = 'Date', Year, Month, Day, sep = '-', remove = FALSE)
+
+DATA$Date <- as.Date(DATA$Date)
+DATA$Pounds <- DATA$Pounds/56/1000000  # Converts lbs to million bu
+
+```
+
+
+This weeks commodity export reports were released this morning and it was another abysmal week for sales and inspections. We are headed into the biggest weeks of the marketing year for shipments doing about half what we usually do.  
+
+
+
+```{r}
+
+######################################
+# For soybeans
+
+# If a tidyverse person reads this: I have to separate out marketing years because if I keep the
+# data in one big dataframe and some over weeks since 09-01 I will mix crop years because right 
+# when harvest begins both new crop and old crop are being exported. In the raw .csv you will see 
+# for the same week different observations can be from different marketing years and summing them 
+# together would be a mistake. If there is a more elegant solution, I am all ears. 
+
+# 2013
+soy_13 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1314') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2013-09-01', units = "weeks"))) %>% # Calculate the week of the marketing year
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>% # Sum total pounds inspected each week of the mkting year
+  mutate(WkCumSum = cumsum(WkTotal))   # Calculate a cumulative sum of pounds inspected by week.
+
+soy_13$Year <- '2013'                  # Attach a year identifier for when we paste the years back together
+
+# 2014
+soy_14 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1415') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2014-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_14$Year <- '2014'
+
+# 2015
+soy_15 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1516') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2015-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_15$Year <- '2015'
+
+# 2016
+soy_16 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1617') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2016-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_16$Year <- '2016'
+
+# 2017
+soy_17 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1718') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2017-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_17$Year <- '2017'
+
+# 2018
+soy_18 <- filter(DATA, Grain == "SOYBEANS" & MKT.YR == '1819') %>% 
+  mutate(MkYrWk = floor(difftime(Date, '2018-09-01', units = "weeks"))) %>%
+  group_by(MkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal))
+
+soy_18$Year <- '2018'
+
+soy <- rbind(soy_13, soy_14, soy_15, soy_16, soy_17, soy_18)
+
+soy$MkYrWk <- as.numeric(soy$MkYrWk)
+soy$Year  <- as.factor(soy$Year)
+
+# Soy plots
+ggplot(soy, aes(x = MkYrWk, y = WkTotal, color = Year)) + 
+  geom_line(size = 1) + 
+  theme_bw() + 
+  labs(title = "GIPSA Weekly Export Inspections of Soybeans, 2013-2018 Marketing Years", x = 'Marketing Year Week Number', y = 'Million Bushels')
+
+p <- ggplot(soy, aes(x = MkYrWk, y = WkCumSum, color = Year)) + 
+  geom_line(size = 1) + 
+  theme_bw() + 
+  labs(title = "GIPSA Cumulative Weekly Export Inspections of Soybeans, 2013-2018 Marketing Years", x = 'Marketing Year Week Number', y = 'Million Bushels')
+
+```
+
+
+But we all knew that was happening. I thought it would be interesting to look country by country at the export sales and see if the patters are different than usual. Here are the typical top importers of U.S. soybeans. Notice that China usually imports about 10 times as much as the number two country. 
+
+![](images\soybean-importers.png)
+
+Here are the export totals for this year. There are notable increases from Spain, the Netherlands, and Mexico. The biggest standout is Argentina. We haven't sold any soybeans to Argentina in the recent history - since 2013 anyway. 
+
+Argentina is a huge soybean crushing country and a large producer of meats. Last year they had a massive drought. I didn't anticipate them to be buying our soybeans, but they appear to be a big beneficiary of the trade war since they can keep their crushing and livestock industries running with cheap U.S. soybeans. 
+
+
+## Export Totals by Country as of Marketing Year Week 7 (Million Bushels)
+
+```{R}
+
+###########################
+DATA_2018      <- DATA_2018 %>% select(Thursday, Grain, Pounds, Destination, MKT.YR) %>%
+  separate(col = 'Thursday', sep = c(4, 6), into = c('Year', 'Month', 'Day'), remove = TRUE, convert = FALSE) %>%
+  unite(col = 'Date', Year, Month, Day, sep = '-', remove = FALSE)
+
+DATA_2018$Date <- as.Date(DATA_2018$Date)
+DATA_2018$Pounds <- DATA_2018$Pounds/56/1000000  # Converts lbs to million bu
+
+soy_18 <- filter(DATA_2018, Grain == "SOYBEANS", MKT.YR =="1819") %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(Destination) %>%
+  summarize(Total = sum(Pounds))
+  #mutate(WkCumSum = cumsum(WkTotal)) 
+
+soy_18 %>% arrange(desc(Total)) %>% kable() %>% kable_styling() 
+
+
+```
+
+
+Here are some charts for several countries. It is worth noting that several Asian and Southeast Asian countries are importing more than usual. There has been a lot of speculation that the same amount of soybeans may still flow to China via some other destinations first. This could be happening a little bit, but the total volume of sales is so low compared to usual that at this rate it cannot be that China is simply getting a similar amount of U.S. soybeans as usual via other countries first. 
+
+Note that Argentina only shows sales for 2018/2019 because there were no sales in the prior years. 
+
+
+```{r}
+
+
+
+# Prep data to look at per country  inspections only######
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'CHINA MAIN') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "China", x = 'Marketing Year Week Number', y = 'Million Bushels')
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'CHINA T') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Taiwan", x = 'Marketing Year Week Number', y = 'Million Bushels')
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'SPAIN') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Spain", x = 'Marketing Year Week Number', y = 'Million Bushels')
+
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'MEXICO') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Mexico", x = 'Marketing Year Week Number', y = 'Million Bushels')
+       
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'INDONESIA') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Indonesia", x = 'Marketing Year Week Number', y = 'Million Bushels')  
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'JAPAN') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Japan", x = 'Marketing Year Week Number', y = 'Million Bushels') 
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'NETHERLANDS') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Netherlands", x = 'Marketing Year Week Number', y = 'Million Bushels') 
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'VIETNAM') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Vietnam", x = 'Marketing Year Week Number', y = 'Million Bushels') 
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'MALAYSIA') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Malaysia", x = 'Marketing Year Week Number', y = 'Million Bushels') 
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'THAILAND') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Thailand", x = 'Marketing Year Week Number', y = 'Million Bushels') 
+
+
+soy_China <- filter(DATA, Grain == "SOYBEANS" & Destination == 'ARGENTINA') %>% 
+  mutate(MkYrWk = as.numeric(floor(difftime(Date, '2013-09-01', units = "weeks")))%% 52) %>%
+  unite(col = 'MYMkYrWk', MKT.YR, MkYrWk, sep = '', remove = TRUE) %>%
+  group_by(MYMkYrWk) %>%
+  summarize(WkTotal = sum(Pounds)) %>%
+  mutate(WkCumSum = cumsum(WkTotal)) %>%
+  separate(col = 'MYMkYrWk', sep = c(4), into = c('MKT.YR', 'MkYrWk'), remove = TRUE, convert = FALSE)
+
+soy_China$MkYrWk <- as.numeric(soy_China$MkYrWk)  
+soy_China        <-   filter(soy_China, MkYrWk %in% (1:7))
+
+ggplot(soy_China, aes(x = MkYrWk, y = WkTotal, fill = MKT.YR)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  theme_bw() + 
+  labs(title = "Argentina", x = 'Marketing Year Week Number', y = 'Million Bushels') 
+
+
+```
+
